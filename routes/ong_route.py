@@ -8,9 +8,10 @@ router = APIRouter(
 )
 
 @router.post(
-    path="/{cnpj}/{name}/{city}/{state}/{phone}/{email}/{mission}/{foundation}/{description}"
+    path="/{ong_id}/{cnpj}/{name}/{city}/{state}/{phone}/{email}/{mission}/{foundation}/{description}"
 )
 async def create_ong(
+    ong_id: str,
     cnpj: str,
     name: str,
     city: str,
@@ -24,6 +25,7 @@ async def create_ong(
     status_code=200
 ):
     ong = Ong(
+        id=ong_id,
         cnpj=cnpj,
         name=name,
         city=city,
@@ -33,14 +35,16 @@ async def create_ong(
         mission=mission,
         foundation=foundation,
         description=description,
+        animals=[],
+        is_valid=True
     ) # TODO
 
 
 @router.get(
-    path="/{cnpj}"
+    path="/{ong_id}"
 )
 async def read_ong(
-    cnpj: str,
+    ong_id: str,
     authorization: str = Header(None),
     status_code=200
 ):
@@ -57,10 +61,10 @@ async def update_ong(
 
 
 @router.delete(
-    path="/{cnpj}"
+    path="/{ong_id}"
 )
 async def delete_ong(
-    cnpj: str,
+    ong_id: str,
     authorization: str = Header(None),
     status_code=200
 ):

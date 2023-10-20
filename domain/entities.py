@@ -3,9 +3,10 @@ from pydantic import BaseModel
 
 
 class Ong(BaseModel):
+    id: str
     cnpj: str
     name: str
-    logo: str # TODO
+    # logo: str # TODO
     city: str
     state: str
     phone: str
@@ -17,8 +18,9 @@ class Ong(BaseModel):
     is_valid: bool = True
 
 class Animal(BaseModel):
+    id: str
     ong: str
-    photo: str # TODO
+    # photo: str # TODO
     name: str
     type: str
     breed: str
@@ -31,6 +33,7 @@ class Animal(BaseModel):
     is_valid: bool = True
 
 class Adopter(BaseModel):
+    id: str
     cpf: str
     name: str
     phone: str
