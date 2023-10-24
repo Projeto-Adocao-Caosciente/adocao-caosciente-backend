@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import json
 
-from routes import ong_route
+from routes import ong_route, animal_route, login_route
 
 api = FastAPI(
     title="Adoção Cãosciente",
@@ -9,6 +9,8 @@ api = FastAPI(
 )
 
 api.include_router(ong_route.router)
+api.include_router(animal_route.router)
+api.include_router(login_route.router)
 
 @api.on_event("startup")
 async def startup_event():
