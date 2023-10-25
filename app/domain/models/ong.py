@@ -12,6 +12,7 @@ class OngModel(BaseModel):
     mission: str
     foundation: str
     description: str
+    animals: List[str]
     password: str
 
     def __dict__(self) -> dict:

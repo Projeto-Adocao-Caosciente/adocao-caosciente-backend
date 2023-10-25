@@ -20,6 +20,14 @@ async def read_ong(
     ong = ong_service.get_ong(ong_id)
     return {"message": "Ong retrieved successfully.", "data": { "ong": ong }}
 
+@router.get("/{ong_id}/animals", status_code=200)
+async def read_ong_animals(
+    ong_id: str,
+    authorization: str = Header(None),
+):
+    animals = ong_service.get_ong_animals(ong_id)
+    return {"message": "Ong animals retrieved successfully.", "data": { "animals": animals }}
+
 
 @router.post("/", status_code=201)
 async def create_ong(

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class AnimalModel(BaseModel):
     ong: str
@@ -7,8 +8,7 @@ class AnimalModel(BaseModel):
     breed: str
     height: float
     weight: float
-    deficiency: str
-    special_needs: str
+    special_needs: List[str]
     adoption_requirements: str
     photo: str # TODO 
     adopter: str
@@ -21,7 +21,6 @@ class AnimalModel(BaseModel):
             'breed': self.breed,
             'height': self.height,
             'weight': self.weight,
-            'deficiency': self.deficiency,
             'special_needs': self.special_needs,
             'adoption_requirements': self.adoption_requirements,
             'photo': self.photo,

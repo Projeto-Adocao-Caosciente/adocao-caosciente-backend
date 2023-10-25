@@ -5,7 +5,7 @@ from bson import ObjectId
 class AnimalService:
     def __init__(self):
         self.db = Database()
-        self.animal_collection = self.db.get_database().get_collection("animals")
+        self.animals_collection = self.db.get_database().get_collection("animals")
 
     def create_animal(self, animal: AnimalModel) -> int:
         with self.db.session.start_transaction():
@@ -28,9 +28,10 @@ class AnimalService:
   
     def get_animal(self, animal_id: str):
         result = self.animals_collection.find_one({"_id": ObjectId(animal_id)})
-        return self.ong_helper(result)
+        return AnimalService.animal_helper(result)
 
-    def animal_helper(self, animal) -> dict:
+    @staticmethod
+    def animal_helper(animal) -> dict:
         return {
             "id": str(animal["_id"]),
             "ong": animal["ong"],
@@ -39,7 +40,6 @@ class AnimalService:
             "breed": animal["breed"],
             "height": animal["height"],
             "weight": animal["weight"],
-            "deficiency": animal["deficiency"],
             "special_needs": animal["special_needs"],
             "adoption_requirements": animal["adoption_requirements"],
             "photo": animal["photo"],
