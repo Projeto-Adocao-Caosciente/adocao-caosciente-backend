@@ -4,7 +4,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 import time
 
-from domain.entities import Login
+from app.domain.models.login import Login
 
 router = APIRouter(
     prefix="/login",
