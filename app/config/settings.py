@@ -1,8 +1,9 @@
+import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "mongodb://localhost:27017"
-    DATABASE_NAME: str = "local_adocaosciente"
+    DATABASE_URL: str = os.environ.get("DATABASE_URL")
+    DATABASE_NAME: str = os.environ.get("DATABASE_NAME")
 
     class Config:
         env_file = ".env"
