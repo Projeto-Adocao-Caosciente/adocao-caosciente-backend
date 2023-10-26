@@ -5,8 +5,8 @@ class LoginService:
     def __init__(self):
         self.ong_service = OngService()
 
-    def authenticate(self, cnpj: str, password: str):
-        ong = self.ong_service.get_ong_by_cnpj(cnpj)
+    def authenticate(self, user: str, password: str):
+        ong = self.ong_service.get_ong_by_cnpj(user)
         if ong is None:
             raise HTTPException(status_code=204, detail="Ong not found")
         if ong["password"] != password:

@@ -16,7 +16,7 @@ login_service = LoginService()
 async def login(
     login: LoginModel,
 ):
-    ong = login_service.authenticate(login.cnpj, login.password)
+    ong = login_service.authenticate(login.user, login.password)
     token = JWTBearer.sign_jwt(ong["email"])
     return {"access_token": token, "token_type": "bearer"}
 
