@@ -12,6 +12,7 @@ class OngModel(BaseModel):
     mission: str
     foundation: str
     description: str
+    animals: List[str]
     password: str
 
     def __dict__(self) -> dict:
@@ -25,7 +26,22 @@ class OngModel(BaseModel):
             'email': self.email,
             'mission': self.mission,
             'foundation': self.foundation,
+            'animals': self.animals,
             'description': self.description,
             'password': self.password,
         }
 
+    @staticmethod
+    def ong_helper(ong) -> dict:
+        return {
+            "id": str(ong["_id"]),
+            "name": ong["name"],
+            "logo": ong["logo"],
+            "city": ong["city"],
+            "state": ong["state"],
+            "phone": ong["phone"],
+            "email": ong["email"],
+            "mission": ong["mission"],
+            "foundation": ong["foundation"],
+            "description": ong["description"],    
+        }

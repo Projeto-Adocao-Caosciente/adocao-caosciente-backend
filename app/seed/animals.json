@@ -1,0 +1,122 @@
+[
+    {
+        "ong": "12345678901234",
+        "name": "Pet 01",
+        "type": "dog",
+        "breed": "breed 01",
+        "height": "30cm",
+        "weight": "5kg",
+        "special_needs": ["special need 01", "special need 02"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 02",
+        "type": "cat",
+        "breed": "breed 02",
+        "height": "25cm",
+        "weight": "4kg",
+        "special_needs": ["special need 03", "special need 04"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=1",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 03",
+        "type": "rabbit",
+        "breed": "breed 03",
+        "height": "15cm",
+        "weight": "2kg",
+        "special_needs": ["special need 05", "special need 06"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=2",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 04",
+        "type": "hamster",
+        "breed": "breed 04",
+        "height": "10cm",
+        "weight": "0.5kg",
+        "special_needs": ["special need 07", "special need 08"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=3",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 05",
+        "type": "parrot",
+        "breed": "breed 05",
+        "height": "20cm",
+        "weight": "0.2kg",
+        "special_needs": ["special need 09", "special need 10"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=4",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 06",
+        "type": "dog",
+        "breed": "breed 06",
+        "height": "32cm",
+        "weight": "5.5kg",
+        "special_needs": ["special need 11", "special need 12"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=5",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 07",
+        "type": "cat",
+        "breed": "breed 07",
+        "height": "27cm",
+        "weight": "4.2kg",
+        "special_needs": ["special need 13", "special need 14"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=6",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 08",
+        "type": "rabbit",
+        "breed": "breed 08",
+        "height": "16cm",
+        "weight": "2.2kg",
+        "special_needs": ["special need 15", "special need 16"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=7",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 09",
+        "type": "hamster",
+        "breed": "breed 09",
+        "height": "11cm",
+        "weight": "0.7kg",
+        "special_needs": ["special need 17", "special need 18"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=8",
+        "adopter": null
+    },
+    {
+        "ong": "12345678901234",
+        "name": "Pet 10",
+        "type": "parrot",
+        "breed": "breed 10",
+        "height": "19cm",
+        "weight": "0.3kg",
+        "special_needs": ["special need 19", "special need 20"],
+        "adoption_requirements": null,
+        "photo": "https://unsplash.it/200/200?random=9",
+        "adopter": null
+    }
+]

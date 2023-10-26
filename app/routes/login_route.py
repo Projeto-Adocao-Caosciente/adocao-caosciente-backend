@@ -1,78 +1,30 @@
-from typing import Dict
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-import jwt
-import time
-
-from app.domain.models.login import Login
+from fastapi import APIRouter
+from app.domain.models.login import LoginModel
+from app.domain.models.ong import OngModel
+from app.services.login_service import LoginService
+from app.services.jwt_service import JWTBearer
+from app.services.ong_service import OngService
 
 router = APIRouter(
-    prefix="/login",
-    tags=['login']
+    prefix="",
+    tags=['authentication']
 )
 
-# JWT_SECRET = config("secret")
-# JWT_ALGORITHM = config("algorithm")
+login_service = LoginService()
 
-JWT_SECRET = "BANANA"
-JWT_ALGORITHM = "HS256"
-
-def token_response(token: str):
-    return {
-        "access_token": token
-    }
-
-def signJWT(user_id: str) -> Dict[str, str]:
-    payload = {
-        "user_id": user_id,
-        "user_roles": {
-            "ONG": True,
-        },
-        "expires": time.time() + 600
-    }
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-    return token_response(token)
-
-def decodeJWT(token: str) -> dict:
-    try:
-        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return decoded_token if decoded_token["expires"] >= time.time() else None
-    except:
-        return {}
-
-class JWTBearer(HTTPBearer):
-    def __init__(self, auto_error: bool = True):
-        super(JWTBearer, self).__init__(auto_error=auto_error)
-
-    async def __call__(self, request: Request):
-        credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
-        if credentials:
-            if not credentials.scheme == "Bearer":
-                raise HTTPException(status_code=400, detail="Invalid authentication scheme.")
-            if not self.verify_jwt(credentials.credentials):
-                raise HTTPException(status_code=403, detail="Invalid token or expired token.")
-            return credentials.credentials
-        else:
-            raise HTTPException(status_code=401, detail="Invalid authorization code.")
-
-    def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
-
-        try:
-            payload = decodeJWT(jwtoken)
-        except:
-            payload = None
-
-        if payload:
-            isTokenValid = True
-        return isTokenValid
-
-@router.post("/")
+@router.post("/login", status_code=200)
 async def login(
-    login_infos: Login,
-    authorization: str = Header(None),
-    status_code=200
+    login: LoginModel,
 ):
-    return signJWT('joao@mailinator.com')
+    ong = login_service.authenticate(login.cnpj, login.password)
+    token = JWTBearer.sign_jwt(ong["email"])
+    return {"access_token": token, "token_type": "bearer"}
+
+@router.post("/register", status_code=201)
+async def register(ong: OngModel):
+    return login_service.register(ong)
     
+@router.post("/refresh", status_code=200)
+async def refresh():
+    # TODO: implementar refresh
+    return {"message": "Refresh successfully."}
