@@ -18,7 +18,3 @@ api.include_router(login_route.router)
 async def startup_event():
     with open("docs/swagger_dump.json", "w") as fp:
         fp.write(json.dumps(api.openapi()))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(api, host="0.0.0.0", port=8000, reload=True)
