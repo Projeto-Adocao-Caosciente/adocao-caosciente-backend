@@ -1,9 +1,8 @@
-import bycrypt
+import bcrypt
+from app.domain.models.animal import AnimalModel
 from app.domain.models.ong import OngModel
 from app.domain.database.db import Database
-from bson import ObjectId
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
-from app.services.animal_service import AnimalService
 
 class OngService:
     def __init__(self):
@@ -14,19 +13,19 @@ class OngService:
     def create_ong(self, ong: OngModel) -> bool:
         try:
             with self.db.session.start_transaction():
-                salt = bycrypt.gensalt() # definir rounds torna a operação mais lenta
-                ong.password = bycrypt.hashpw(ong.password.encode(), salt)
+                salt = bcrypt.gensalt() # definir rounds torna a operação mais lenta
+                ong.password = bcrypt.hashpw(ong.password.encode(), salt)
                 result = self.ongs_collection.insert_one(ong.dict())                
                 return True if isinstance(result, InsertOneResult) else False
         except Exception as e:
             print(f"Error creating ong: {e}")
             return False
     
-    def update_ong(self, ong: OngModel, ong_id: str) -> bool:
+    def update_ong(self, ong: OngModel, ong_email: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 result = self.ongs_collection.update_one(
-                    {"_id": ObjectId(ong_id)},
+                    {"email": ong_email},
                     {"$set": ong.dict()}
                 )
                 return True if isinstance(result, UpdateResult) else False
@@ -34,21 +33,21 @@ class OngService:
             print(f"Error updating ong: {e}")
             return False
     
-    def delete_ong(self, ong_id: str) -> bool:
+    def delete_ong(self, ong_email: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 # TODO: Deleção lógica
-                result = self.ongs_collection.delete_one({"_id": ObjectId(ong_id)})
+                result = self.ongs_collection.delete_one({"email": ong_email})
                 return True if isinstance(result, DeleteResult) else False
         except Exception as e:
             print(f"Error deleting ong: {e}")
             return False
 
-    def get_ong(self, ong_id: str):
+    def get_ong(self, ong_email: str):
         try:
-            result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
+            result = self.ongs_collection.find_one({"email": ong_email})
             if result:
-                return OngService.ong_helper(result)
+                return OngModel.ong_helper(result)
             return None
         except Exception as e:
             print(f"Error getting ong: {e}")
@@ -64,11 +63,11 @@ class OngService:
             print(f"Error getting ong by cnpj: {e}")
             return None
 
-    def get_ong_animals(self, ong_id: str) -> list:
+    def get_ong_animals(self, ong_email: str) -> list:
         try:
             result = list(self.ongs_collection.aggregate([
                 {
-                    "$match": {"_id": ObjectId(ong_id)}
+                    "$match": {"email": ong_email}
                 },
                 {
                     "$lookup": {
@@ -86,23 +85,9 @@ class OngService:
             ]))
             if result:
                 animals = result[0]["animals"]
-                return [AnimalService.animal_helper(animal) for animal in animals]
+                return [AnimalModel.animal_helper(animal) for animal in animals]
             return []
         except Exception as e:
             print(f"Error getting ong animals: {e}")
             return []
-
-    @staticmethod
-    def ong_helper(ong) -> dict:
-        return {
-            "id": str(ong["_id"]),
-            "name": ong["name"],
-            "logo": ong["logo"],
-            "city": ong["city"],
-            "state": ong["state"],
-            "phone": ong["phone"],
-            "email": ong["email"],
-            "mission": ong["mission"],
-            "foundation": ong["foundation"],
-            "description": ong["description"],    
-        }
+    

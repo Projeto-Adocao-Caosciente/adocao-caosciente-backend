@@ -10,7 +10,8 @@ class AnimalModel(BaseModel):
     weight: float
     special_needs: List[str]
     adoption_requirements: str
-    photo: str # TODO 
+    photo: str # TODO
+    animals: List[str]
     adopter: str
 
     def __dict__(self) -> dict:
@@ -25,4 +26,20 @@ class AnimalModel(BaseModel):
             'adoption_requirements': self.adoption_requirements,
             'photo': self.photo,
             'adopter': self.adopter,
+        }
+    
+    @staticmethod
+    def animal_helper(animal) -> dict:
+        return {
+            "id": str(animal["_id"]),
+            "ong": animal["ong"],
+            "name": animal["name"],
+            "type": animal["type"],
+            "breed": animal["breed"],
+            "height": animal["height"],
+            "weight": animal["weight"],
+            "special_needs": animal["special_needs"],
+            "adoption_requirements": animal["adoption_requirements"],
+            "photo": animal["photo"],
+            "adopter": animal["adopter"],
         }
