@@ -2,7 +2,7 @@ import bycrypt
 from app.domain.models.ong import OngModel
 from app.domain.database.db import Database
 from bson import ObjectId
-from pymongo.results import InsertOneResult
+from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 from app.services.animal_service import AnimalService
 
 class OngService:
@@ -16,7 +16,7 @@ class OngService:
             with self.db.session.start_transaction():
                 salt = bycrypt.gensalt() # definir rounds torna a operação mais lenta
                 ong.password = bycrypt.hashpw(ong.password.encode(), salt)
-                result = self.ongs_collection.insert_one(ong.model_dump())                
+                result = self.ongs_collection.insert_one(ong.dict())                
                 return True if isinstance(result, InsertOneResult) else False
         except Exception as e:
             print(f"Error creating ong: {e}")
@@ -25,11 +25,11 @@ class OngService:
     def update_ong(self, ong: OngModel, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
-                self.ongs_collection.update_one(
+                result = self.ongs_collection.update_one(
                     {"_id": ObjectId(ong_id)},
-                    {"$set": ong.model_dump()}
+                    {"$set": ong.dict()}
                 )
-                return True
+                return True if isinstance(result, UpdateResult) else False
         except Exception as e:
             print(f"Error updating ong: {e}")
             return False
@@ -39,7 +39,7 @@ class OngService:
             with self.db.session.start_transaction():
                 # TODO: Deleção lógica
                 result = self.ongs_collection.delete_one({"_id": ObjectId(ong_id)})
-                return True if result.deleted_count > 0 else False
+                return True if isinstance(result, DeleteResult) else False
         except Exception as e:
             print(f"Error deleting ong: {e}")
             return False
