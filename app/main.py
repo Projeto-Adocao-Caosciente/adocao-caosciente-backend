@@ -8,18 +8,22 @@ api = FastAPI(
     version="0.1.0"
 )
 
-# TODO: remover o allow_origins=["*"] e adicionar o endereço do front
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://adocao-caosciente-frontend.vercel.app/"
+    "https://adocao-caosciente-frontend.vercel.app/"
+]
 
 # TODO: Verificar headers e definir melhor isso para garantir segurança como o no-sniff, xss, etc
 
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["POST", "GET", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
-    expose_headers=["Content-Length"],
-    allow_max_age=600
 )
 
 api.include_router(ong_route.router)
