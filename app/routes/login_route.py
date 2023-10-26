@@ -4,7 +4,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 import time
 
-from app.domain.models.login import Login
+from app.domain.models.login import LoginModel
+from app.services.login_service import LoginService
 
 router = APIRouter(
     prefix="/login",
@@ -48,7 +49,7 @@ class JWTBearer(HTTPBearer):
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if credentials:
-            if not credentials.scheme == "Bearer":
+            if credentials.scheme != "Bearer":
                 raise HTTPException(status_code=400, detail="Invalid authentication scheme.")
             if not self.verify_jwt(credentials.credentials):
                 raise HTTPException(status_code=403, detail="Invalid token or expired token.")
@@ -68,11 +69,17 @@ class JWTBearer(HTTPBearer):
             isTokenValid = True
         return isTokenValid
 
-@router.post("/")
+login_service = LoginService()
+
+@router.post("/", status_code=200)
 async def login(
-    login_infos: Login,
+    login: LoginModel,
     authorization: str = Header(None),
-    status_code=200
 ):
-    return signJWT('joao@mailinator.com')
+    # return signJWT('joao@mailinator.com')
+    ong = login_service.authenticate(login.cnpj, login.password)
+
+    if ong is None:
+        raise HTTPException(status_code=401, detail="Invalid username and/or password")
     
+    return signJWT(ong["email"])

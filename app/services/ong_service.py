@@ -29,8 +29,16 @@ class OngService:
     
     def get_ong(self, ong_id: str):
         result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
-        return OngService.ong_helper(result)
+        if result:
+            return OngService.ong_helper(result)
+        return None
     
+    def get_ong_by_cnpj(self, cnpj: str):
+        result = self.ongs_collection.find_one({"cnpj": cnpj})
+        if result:
+            return {"email": result["email"], "password": result["password"]}
+        return None
+
     def get_ong_animals(self, ong_id: str) -> list:
         result = list(self.ongs_collection.aggregate([
             {
