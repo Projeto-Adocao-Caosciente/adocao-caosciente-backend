@@ -29,7 +29,7 @@ async def create_animal(
 ):
     # TODO: Validar se a a ong é valida de fato
     ong_email = jwt_bearer.get_ong_user_id()
-    ong = OngService().get_ong(ong_email)
+    ong = OngService().get_ong_by_email(ong_email)
     if ong is None:
         return {"message": "Error creating animal. Ong not found."}
     animal.ong = ong["cnpj"]

@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
 
@@ -13,7 +13,7 @@ class AnimalModel(BaseModel):
     adoption_requirements: List[str] = Field([]) # TODO: Isso provavelmente é o formulario = Field(...)
     photo: str = Field(...) # TODO
     created_at: str = Field("")
-    updated_at: str = Field(time.time())
+    updated_at: str = Field(datetime.now())
     adopter: str = Field(...)
 
     class Config:

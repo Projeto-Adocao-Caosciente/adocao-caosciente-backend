@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from typing import Optional
 from app.domain.models.animal import AnimalModel
 from app.domain.database.db import Database
@@ -6,6 +6,7 @@ from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from bson import ObjectId
 
 from app.services.ong_service import OngService
+
 
 class AnimalService:
     def __init__(self, ong_service: OngService):
@@ -16,9 +17,9 @@ class AnimalService:
     def create_animal(self, animal: AnimalModel) -> bool:
         try:
             with self.db.session.start_transaction():
-                animal.created_at = time.time()
+                animal.created_at = datetime.now()
                 result = self.animals_collection.insert_one(animal.dict())
-                return True if isinstance(result, InsertOneResult) else False
+                return True if result else False
         except Exception as e:
             print(f"Error creating animal: {e}")
             return False
@@ -31,7 +32,7 @@ class AnimalService:
                     {"_id": ObjectId(animal_id)},
                     {"$set": animal.dict()}
                 )
-                return True if isinstance(result, UpdateResult) else False
+                return True if result else False
         except Exception as e:
             print(f"Error updating animal: {e}")
             return False
@@ -40,20 +41,21 @@ class AnimalService:
         try:
             with self.db.session.start_transaction():
                 # TODO: Deleção lógica
-                result = self.animals_collection.delete_one({"_id": animal_id})
-                return True if isinstance(result, DeleteResult) else False
+                result = self.animals_collection.delete_one({"_id": ObjectId(animal_id)})
+                return True if result else False
         except Exception as e:
             print(f"Error deleting animal: {e}")
             return False
-  
+
     def get_animal(self, animal_id: str, ong_email: str):
         try:
-            ong = self.ong_service.get_ong(ong_email)
+            ong = self.ong_service.get_ong_by_email(ong_email)
             # TODO: Se a ong não existir mais, não retornar o animal, isso ta certo?
             if ong is None:
                 return None
 
-            result = self.animals_collection.find_one({"_id": ObjectId(animal_id), "ong": ong["_id"]})
+            result = self.animals_collection.find_one(
+                {"_id": ObjectId(animal_id), "ong": ong["id"]})
             return AnimalModel.animal_helper(result)
         except Exception as e:
             print(f"Error getting animal: {e}")

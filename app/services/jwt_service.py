@@ -1,3 +1,4 @@
+import time
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi import HTTPException, Request
 import jwt
@@ -6,6 +7,7 @@ import time
 # TODO: definir como variavel de ambiente
 JWT_SECRET = "BANANA"
 JWT_ALGORITHM = "HS256"
+
 
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
@@ -16,13 +18,16 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if credentials:
             if credentials.scheme != "Bearer":
-                raise HTTPException(status_code=400, detail="Invalid authentication scheme.")
+                raise HTTPException(
+                    status_code=400, detail="Invalid authentication scheme.")
             if not self.verify_jwt(credentials.credentials):
-                raise HTTPException(status_code=403, detail="Invalid token or expired token.")
+                raise HTTPException(
+                    status_code=403, detail="Invalid token or expired token.")
             self.credentials = credentials.credentials
             return credentials.credentials
         else:
-            raise HTTPException(status_code=401, detail="Invalid authorization code.")
+            raise HTTPException(
+                status_code=401, detail="Invalid authorization code.")
 
     def verify_jwt(self, jwtoken: str) -> bool:
         payload = None
@@ -32,10 +37,11 @@ class JWTBearer(HTTPBearer):
             print("Error decoding token: ", e)
 
         return True if payload else False
-    
+
     def decode_jwt(self, jwt_token: str):
         try:
-            payload = jwt.decode(jwt_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(jwt_token, JWT_SECRET,
+                                 algorithms=[JWT_ALGORITHM])
             return payload
         except Exception as e:
             print("Error decoding token: ", e)

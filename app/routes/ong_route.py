@@ -14,7 +14,7 @@ jwt_bearer = JWTBearer()
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong():
     ong_email = jwt_bearer.get_ong_user_id()
-    ong = ong_service.get_ong(ong_email)
+    ong = ong_service.get_ong_by_email(ong_email)
     return {"message": "Ong retrieved successfully.", "data": { "ong": ong }}
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
@@ -28,9 +28,9 @@ async def read_ong_animals():
 @router.post("/", status_code=201)
 async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
     result = ong_service.create_ong(ong)
-    if result is None:
-        return {"message": "Ong already exists."}
-    return {"message": "Ong created successfully."}
+    if result:
+        return {"message": "Ong created successfully."}
+    return {"message": "Failed to create ong."}
 
 
 @router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)

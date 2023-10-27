@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
 
@@ -15,8 +15,8 @@ class OngModel(BaseModel):
     description: str = Field(..., max_length=300)
     animals: List[str] = Field([])
     created_at: str = Field("")
-    updated_at: str = Field(time.time())
-    password: str  = Field(..., )
+    updated_at: str = Field(datetime.now())
+    password: str  = Field(...)
 
     class Config:
         schema_extra = {
@@ -47,6 +47,8 @@ class OngModel(BaseModel):
             'animals': self.animals,
             'description': self.description,
             'password': self.password,
+            'created_at': self.created_at,
+            'updated_at': datetime.now(),
         }
 
     @staticmethod
