@@ -8,13 +8,11 @@ api = FastAPI(
     version="0.1.0"
 )
 
-
 origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://adocao-caosciente-frontend.vercel.app",
     "https://adocao-caosciente-frontend.vercel.app",
-    "*.vercel.app"
 ]
 
 # TODO: Verificar headers e definir melhor isso para garantir segurança como o no-sniff, xss, etc

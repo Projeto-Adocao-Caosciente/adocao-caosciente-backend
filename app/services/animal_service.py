@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 from app.domain.models.animal import AnimalModel
 from app.domain.database.db import Database
@@ -15,7 +16,8 @@ class AnimalService:
     def create_animal(self, animal: AnimalModel) -> bool:
         try:
             with self.db.session.start_transaction():
-                result = self.animals_collection.insert_one(animal)
+                animal.created_at = time.time()
+                result = self.animals_collection.insert_one(animal.dict())
                 return True if isinstance(result, InsertOneResult) else False
         except Exception as e:
             print(f"Error creating animal: {e}")
@@ -24,6 +26,7 @@ class AnimalService:
     def update_animal(self, animal: AnimalModel, animal_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
+                # TODO: O update n funciona muito bem ainda, ajustar isso
                 result = self.animals_collection.update_one(
                     {"_id": ObjectId(animal_id)},
                     {"$set": animal.dict()}

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
 from app.services.ong_service import OngService
@@ -25,9 +25,8 @@ async def read_ong_animals():
         return {"message": "Ong has no animals.", "data": { "animals": animals }}
     return {"message": "Ong animals retrieved successfully.", "data": { "animals": animals }}
 
-
 @router.post("/", status_code=201)
-async def create_ong(ong: OngModel):
+async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
     result = ong_service.create_ong(ong)
     if result is None:
         return {"message": "Ong already exists."}
@@ -35,14 +34,14 @@ async def create_ong(ong: OngModel):
 
 
 @router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-async def update_ong(ong: OngModel):
+async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
     ong_email = jwt_bearer.get_ong_user_id()
     ong_service.update_ong(ong, ong_email)
     return {"message": "Ong updated successfully."}
 
 
-@router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-async def delete_ong():
-    ong_email = jwt_bearer.get_ong_user_id()
-    ong_service.delete_ong(ong_email)
-    return {"message": "Ong deleted successfully."}
+# @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
+# async def delete_ong():
+#     ong_email = jwt_bearer.get_ong_user_id()
+#     ong_service.delete_ong(ong_email)
+#     return {"message": "Ong deleted successfully."}

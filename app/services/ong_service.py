@@ -1,3 +1,4 @@
+import time
 import bcrypt
 from app.domain.models.animal import AnimalModel
 from app.domain.models.ong import OngModel
@@ -15,6 +16,7 @@ class OngService:
             with self.db.session.start_transaction():
                 salt = bcrypt.gensalt() # definir rounds torna a operação mais lenta
                 ong.password = bcrypt.hashpw(ong.password.encode(), salt)
+                ong.created_at = time.time()
                 result = self.ongs_collection.insert_one(ong.dict())                
                 return True if isinstance(result, InsertOneResult) else False
         except Exception as e:
@@ -24,6 +26,7 @@ class OngService:
     def update_ong(self, ong: OngModel, ong_email: str) -> bool:
         try:
             with self.db.session.start_transaction():
+                # TODO: O update n funciona muito bem ainda, ajustar isso
                 result = self.ongs_collection.update_one(
                     {"email": ong_email},
                     {"$set": ong.dict()}
@@ -76,6 +79,9 @@ class OngService:
                         "foreignField": "_id",
                         "as": "animals"
                     }
+                },
+                {
+                    "$sort": {"animals.created_at": -1}
                 },
                 {
                     "$project": {

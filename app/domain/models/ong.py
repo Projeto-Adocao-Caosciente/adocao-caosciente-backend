@@ -1,19 +1,37 @@
+import time
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class OngModel(BaseModel):
-    cnpj: str
-    name: str
-    logo: str # TODO
-    city: str
-    state: str
-    phone: str
-    email: str
-    mission: str
-    foundation: str
-    description: str
-    animals: List[str]
-    password: str
+    cnpj: str = Field(...)
+    name: str = Field(..., max_length=80)
+    logo: str = Field(...)
+    city: str = Field(..., max_length=50)
+    state: str = Field(..., max_length=2)
+    phone: str = Field(...)
+    email: str = Field(..., validate_email=True) 
+    mission: str = Field(..., max_length=150)
+    foundation: str = Field(...,validate_regex=r"^\d{4}-\d{2}-\d{2}$") # YYYY-MM-DD
+    description: str = Field(..., max_length=300)
+    animals: List[str] = Field([])
+    created_at: str = Field(...)
+    updated_at: str = Field(time.time())
+    password: str  = Field(..., )
+
+    class Config:
+        schema_extra = {
+            "cnpj": "12345678901234",
+            "name": "Ong Name",
+            "logo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUTExMWFhUXGBgYGBgYGBgYGBgYGBgYGBgYGBgYHSggGBolHRgXITEhJSkrLi4uGB8zODMsNygtLisBCgo,",
+            "city": "City Name",
+            "state": "ST",
+            "phone": "(11) 91234-5678",
+            "email": "ong@email.com",
+            "mission": "Ong mission",
+            "foundation": "2023-10-27",
+            "description": "Ong description",
+            "password": "ong_password"
+        }
 
     def __dict__(self) -> dict:
         return {
@@ -43,5 +61,5 @@ class OngModel(BaseModel):
             "email": ong["email"],
             "mission": ong["mission"],
             "foundation": ong["foundation"],
-            "description": ong["description"],    
+            "description": ong["description"],
         }
