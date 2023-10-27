@@ -7,14 +7,14 @@ class OngModel(BaseModel):
     name: str = Field(..., max_length=80)
     logo: str = Field(...)
     city: str = Field(..., max_length=50)
-    state: str = Field(..., max_length=2)
+    state: str = Field(...)
     phone: str = Field(...)
     email: str = Field(..., validate_email=True) 
     mission: str = Field(..., max_length=150)
     foundation: str = Field(...,validate_regex=r"^\d{4}-\d{2}-\d{2}$") # YYYY-MM-DD
     description: str = Field(..., max_length=300)
     animals: List[str] = Field([])
-    created_at: str = Field(...)
+    created_at: str = Field("")
     updated_at: str = Field(time.time())
     password: str  = Field(..., )
 

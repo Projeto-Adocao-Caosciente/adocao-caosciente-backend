@@ -23,7 +23,7 @@ api.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["*"],
 )
 
 api.include_router(ong_route.router)
