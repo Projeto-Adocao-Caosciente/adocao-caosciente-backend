@@ -18,7 +18,7 @@ async def login(
 ):
     ong = login_service.authenticate(login.user, login.password)
     token = JWTBearer.sign_jwt(ong["email"])
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "user": ong}
 
 @router.post("/register", status_code=201)
 async def register(ong: OngModel):

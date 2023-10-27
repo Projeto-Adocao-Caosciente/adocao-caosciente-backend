@@ -57,7 +57,7 @@ class OngService:
         try:
             result = self.ongs_collection.find_one({"cnpj": cnpj})
             if result:
-                return {"email": result["email"], "password": result["password"]}
+                return result
             return None
         except Exception as e:
             print(f"Error getting ong by cnpj: {e}")

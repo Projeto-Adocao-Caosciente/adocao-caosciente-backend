@@ -1,5 +1,6 @@
 from app.services.ong_service import OngService
 from fastapi import HTTPException
+from app.domain.models.ong import OngModel
 
 class LoginService:
     def __init__(self):
@@ -11,7 +12,7 @@ class LoginService:
             raise HTTPException(status_code=401, detail="invalid user or password")
         if ong["password"] != password:
             raise HTTPException(status_code=401, detail="invalid user or password")
-        return ong
+        return OngModel.ong_helper(ong)
 
     def register(self, ong):
         return self.ong_service.create_ong(ong)
