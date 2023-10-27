@@ -13,6 +13,7 @@ origins = [
     "http://localhost:3000",
     "http://adocao-caosciente-frontend.vercel.app",
     "https://adocao-caosciente-frontend.vercel.app",
+    "*" # TODO: Remover depois
 ]
 
 # TODO: Verificar headers e definir melhor isso para garantir segurança como o no-sniff, xss, etc
