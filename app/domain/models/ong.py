@@ -55,6 +55,7 @@ class OngModel(BaseModel):
     def ong_helper(ong) -> dict:
         return {
             "id": str(ong["_id"]),
+            "cnpj": ong["cnpj"],
             "name": ong["name"],
             "logo": ong["logo"],
             "city": ong["city"],
@@ -64,4 +65,6 @@ class OngModel(BaseModel):
             "mission": ong["mission"],
             "foundation": ong["foundation"],
             "description": ong["description"],
+            "created_at": ong["created_at"],
+            "updated_at": ong["updated_at"],
         }
