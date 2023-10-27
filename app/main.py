@@ -12,8 +12,9 @@ api = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",
-    "http://adocao-caosciente-frontend.vercel.app/"
-    "https://adocao-caosciente-frontend.vercel.app/"
+    "http://adocao-caosciente-frontend.vercel.app",
+    "https://adocao-caosciente-frontend.vercel.app",
+    "*.vercel.app"
 ]
 
 # TODO: Verificar headers e definir melhor isso para garantir segurança como o no-sniff, xss, etc
@@ -23,7 +24,7 @@ api.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 api.include_router(ong_route.router)
