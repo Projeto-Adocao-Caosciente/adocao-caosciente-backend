@@ -55,7 +55,7 @@ class AnimalService:
                 return None
 
             result = self.animals_collection.find_one(
-                {"_id": ObjectId(animal_id), "ong": ong["id"]})
+                {"_id": ObjectId(animal_id), "ong": ong["cnpj"]})
             return AnimalModel.animal_helper(result)
         except Exception as e:
             print(f"Error getting animal: {e}")
