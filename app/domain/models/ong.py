@@ -3,20 +3,20 @@ from typing import List
 from pydantic import BaseModel, Field
 
 class OngModel(BaseModel):
-    cnpj: str = Field(...)
-    name: str = Field(..., max_length=80)
-    logo: str = Field(...)
-    city: str = Field(..., max_length=50)
-    state: str = Field(...)
-    phone: str = Field(...)
-    email: str = Field(..., validate_email=True) 
-    mission: str = Field(..., max_length=150)
-    foundation: str = Field(...,validate_regex=r"^\d{4}-\d{2}-\d{2}$") # YYYY-MM-DD
-    description: str = Field(..., max_length=300)
-    animals: List[str] = Field([])
-    created_at: str = Field("")
-    updated_at: str = Field(datetime.now())
-    password: str  = Field(...)
+    cnpj: str = ""
+    name: str = ""
+    logo: str = ""
+    city: str = ""
+    state: str = ""
+    phone: str = ""
+    email: str = ""
+    mission: str = "" 
+    foundation: str = "" # YYYY-MM-DD
+    description: str =  ""
+    animals: List[str] =  []   
+    created_at: str =  ""   
+    updated_at: str = datetime.now()
+    password: str  = ""
 
     class Config:
         schema_extra = {

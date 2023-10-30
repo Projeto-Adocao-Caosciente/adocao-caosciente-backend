@@ -1,3 +1,4 @@
+import bson
 from datetime import datetime
 from datetime import datetime
 import bcrypt
@@ -98,3 +99,15 @@ class OngService:
         except Exception as e:
             print(f"Error getting ong animals: {e}")
             return []
+    
+    def update_ong_animals(self, ong_id, animal_id):
+        try:
+            with self.db.session.start_transaction():
+                result = self.ongs_collection.update_one(
+                    {"_id": bson.ObjectId(ong_id)},
+                    {"$push": {"animals": animal_id}}
+                )
+                return True if result else False
+        except Exception as e:
+            print(f"Error updating ong animals: {e}")
+            return False

@@ -1,4 +1,6 @@
 from datetime import datetime
+import http
+import fastapi
 from typing import Optional
 from app.domain.models.animal import AnimalModel
 from app.domain.database.db import Database
@@ -7,18 +9,23 @@ from bson import ObjectId
 
 from app.services.ong_service import OngService
 
-
 class AnimalService:
     def __init__(self, ong_service: OngService):
         self.db = Database()
         self.ong_service = ong_service
         self.animals_collection = self.db.get_database().get_collection("animals")
 
-    def create_animal(self, animal: AnimalModel) -> bool:
+    def create_animal(self, animal: AnimalModel, ong_email: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 animal.created_at = datetime.now()
                 result = self.animals_collection.insert_one(animal.dict())
+                if result == False:
+                    raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Error creating animal.")
+                ong = self.ong_service.get_ong_by_email(ong_email)
+                if ong is None:
+                    raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Ong not found.")
+                result = self.ong_service.update_ong_animals(ong["id"], result.inserted_id)
                 return True if result else False
         except Exception as e:
             print(f"Error creating animal: {e}")
