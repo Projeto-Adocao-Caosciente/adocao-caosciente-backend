@@ -52,6 +52,16 @@ class OngService:
             print(f"Error updating ong: {e}")
             return False
 
+    def delete_ong(self, ong_email: str) -> bool:
+        try:
+            with self.db.session.start_transaction():
+                # TODO: Deleção lógica
+                result = self.ongs_collection.delete_one({"email": ong_email})
+                return True if result else False
+        except Exception as e:
+            print(f"Error deleting ong: {e}")
+            return False
+    
     def get_ong_by_email(self, ong_email: str):
         try:
             result = self.ongs_collection.find_one({"email": ong_email})
