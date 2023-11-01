@@ -30,23 +30,26 @@ class OngService:
         try:
             with self.db.session.start_transaction():
                 # TODO: O update n funciona muito bem ainda, ajustar isso
-                result = self.ongs_collection.update_one(
-                    {"email": ong_email},
-                    {"$set": ong.dict()}
-                )
+                old_ong = self.get_ong_by_email(ong_email)
+                
+                # Create a dict of the fields that needs to be updated
+                update_fields = {}
+                
+                for key, value in ong.dict().items():
+                    # Update keys that is diferent from old data and is not empty, ignore _id, created at and updated_at
+                    if key not in ["_id", "created_at", "updated_at"] and value != old_ong.get(key) and value:
+                        update_fields[key] = value
+                # if any field was modified 
+                if update_fields:
+                    #change value of updated_at to now
+                    update_fields["updated_at"] = datetime.now()
+                    result = self.ongs_collection.update_one(
+                        {"email": ong_email},
+                        {"$set": update_fields}
+                    )
                 return True if result else False
         except Exception as e:
             print(f"Error updating ong: {e}")
-            return False
-
-    def delete_ong(self, ong_email: str) -> bool:
-        try:
-            with self.db.session.start_transaction():
-                # TODO: Deleção lógica
-                result = self.ongs_collection.delete_one({"email": ong_email})
-                return True if result else False
-        except Exception as e:
-            print(f"Error deleting ong: {e}")
             return False
 
     def get_ong_by_email(self, ong_email: str):
