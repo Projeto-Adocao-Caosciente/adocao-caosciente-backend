@@ -1,5 +1,5 @@
 import json
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from app.routes import ong_route, animal_route, login_route
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -37,3 +37,9 @@ api.include_router(login_route.router)
 async def startup_event():
     with open("docs/swagger_dump.json", "w") as fp:
         fp.write(json.dumps(api.openapi()))
+
+@api.middleware("http")
+async def pass_options_request(request, call_next):
+    if request.method == "OPTIONS":
+        return Response(status_code=204)
+    return await call_next(request)
