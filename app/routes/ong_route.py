@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
 from app.services.ong_service import OngService
@@ -36,8 +36,13 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_ex
 @router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)
 async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
     ong_email = jwt_bearer.get_ong_user_id()
-    ong_service.update_ong(ong, ong_email)
-    return {"message": "Ong updated successfully."}
+    response = ong_service.update_ong(ong, ong_email)
+    if (response[0]):
+        return {"message": response[1]}
+    else:
+        raise HTTPException(status_code=response[2], detail=response[1])
+        
+    
 
 
 # @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
