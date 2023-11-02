@@ -42,7 +42,7 @@ async def update_animal(
 ):
     # TODO: Validar se a a ong é valida de fato
     ong_email = jwt_bearer.get_ong_user_id()
-    animal.ong = ong_email
+    #animal.ong = ong_email
     result = animal_service.update_animal(animal, animal_id)
     if result:
         return  {"message": "Animal updated successfully."}
