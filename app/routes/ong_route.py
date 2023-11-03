@@ -40,8 +40,11 @@ async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_ex
     return {"message": "Ong updated successfully."}
 
 
-# @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-# async def delete_ong():
-#     ong_email = jwt_bearer.get_ong_user_id()
-#     ong_service.delete_ong(ong_email)
-#     return {"message": "Ong deleted successfully."}
+@router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
+async def delete_ong():
+    ong_email = jwt_bearer.get_ong_user_id()
+    result = ong_service.delete_ong(ong_email)
+    if result:
+        return {"message": "Ong deleted successfully."}
+    else:
+        return {"message": "Erro deleting Ong"}
