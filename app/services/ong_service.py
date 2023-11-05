@@ -60,7 +60,7 @@ class OngService:
                         )
                     # Catch the duplicate key error
                     except pm_Errors.DuplicateKeyError:
-                        return [False, "Ong with this email ou CNPJ already exists", 409]
+                        return [False, "Ong with this email or CNPJ already exists", 409]
 
                     # If the update was successful, return a success response
                     if result:
