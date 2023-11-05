@@ -42,9 +42,20 @@ class OngService:
     def delete_ong(self, ong_email: str) -> bool:
         try:
             with self.db.session.start_transaction():
-                # TODO: Deleção lógica
-                result = self.ongs_collection.delete_one({"email": ong_email})
-                return True if result else False
+                deleted_ongs = self.db.get_database().get_collection("deleted_ongs")
+                # Verifica se o array ong.animals está vazio
+                
+                animals = self.get_ong_animals(ong_email)
+                if not animals:
+                    ong = self.ongs_collection.find_one({"email": ong_email})
+                    result = deleted_ongs.insert_one(ong)
+                    if result:
+                        result = self.ongs_collection.delete_one({"email": ong_email})
+                    return True if result else False
+
+                # Se o array ong.animals não estiver vazio, retorna False
+                return False
+
         except Exception as e:
             print(f"Error deleting ong: {e}")
             return False
