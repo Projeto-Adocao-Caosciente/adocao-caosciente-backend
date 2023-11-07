@@ -50,8 +50,8 @@ async def startup_event():
     with open("docs/swagger_dump.json", "w") as fp:
         fp.write(json.dumps(api.openapi()))
 
-@api.middleware("http")
-async def pass_options_request(request, call_next):
-    if request.method == "OPTIONS" and request.headers.get("Origin"):
-        return Response(status_code=204)
-    return await call_next(request)
+# @api.middleware("http")
+# async def pass_options_request(request, call_next):
+#     if request.method == "OPTIONS" and request.headers.get("Origin"):
+#         return Response(status_code=204)
+#     return await call_next(request)
