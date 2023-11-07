@@ -13,17 +13,29 @@ origins = [
     "http://localhost:3000",
     "http://adocao-caosciente-frontend.vercel.app",
     "https://adocao-caosciente-frontend.vercel.app",
-    "*" # TODO: Remover depois
+]
+
+headers = [
+    "X-CSRF-Token", 
+    "X-Requested-With",
+    "Accept",
+    "Accept-Version",
+    "Content-Length",
+    "Content-MD5",
+    "Content-Type",
+    "Date",
+    "X-Api-Version",
+    "Authorization"
 ]
 
 # TODO: Verificar headers e definir melhor isso para garantir segurança como o no-sniff, xss, etc
 
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=headers,
 )
 
 api.include_router(ong_route.router)
