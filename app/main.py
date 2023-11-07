@@ -52,6 +52,6 @@ async def startup_event():
 
 @api.middleware("http")
 async def pass_options_request(request, call_next):
-    if request.method == "OPTIONS":
+    if request.method == "OPTIONS" and request.headers.get("Origin"):
         return Response(status_code=204)
     return await call_next(request)
