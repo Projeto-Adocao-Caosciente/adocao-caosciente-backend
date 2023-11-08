@@ -17,8 +17,8 @@ jwt_bearer = JWTBearer()
 
 @router.get("/{animal_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_animal(animal_id: str):
-    ong_email = jwt_bearer.get_ong_user_id()
-    animal = animal_service.get_animal(animal_id, ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    animal = animal_service.get_animal(animal_id, ong_id)
     if animal is None:
         return {"message": "Animal not found.", "data": { "animal": animal }}
     return {"message": "Animal retrieved successfully.", "data": { "animal": animal }}
@@ -28,8 +28,8 @@ async def create_animal(
     animal: AnimalModel = Body(..., example=AnimalModel.Config.schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
-    ong_email = jwt_bearer.get_ong_user_id()
-    result = animal_service.create_animal(animal, ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    result = animal_service.create_animal(animal, ong_id)
     if result:
         return  {"message": "Animal created successfully."}
     return {"message": "Error creating animal."}
@@ -41,8 +41,8 @@ async def update_animal(
     animal: AnimalModel = Body(..., example=AnimalModel.Config.schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
-    ong_email = jwt_bearer.get_ong_user_id()
-    animal.ong = ong_email
+    ong_id = jwt_bearer.get_ong_user_id()
+    animal.ong = ong_id
     result = animal_service.update_animal(animal, animal_id)
     if result:
         return  {"message": "Animal updated successfully."}

@@ -13,14 +13,14 @@ jwt_bearer = JWTBearer()
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong():
-    ong_email = jwt_bearer.get_ong_user_id()
-    ong = ong_service.get_ong_by_email(ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    ong = ong_service.get_ong_by_email(ong_id)
     return {"message": "Ong retrieved successfully.", "data": { "ong": ong }}
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong_animals():
-    ong_email = jwt_bearer.get_ong_user_id()
-    animals = ong_service.get_ong_animals(ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    animals = ong_service.get_ong_animals(ong_id)
     if len(animals) == 0:
         return {"message": "Ong has no animals.", "data": { "animals": animals }}
     return {"message": "Ong animals retrieved successfully.", "data": { "animals": animals }}
@@ -35,15 +35,15 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_ex
 
 @router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)
 async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
-    ong_email = jwt_bearer.get_ong_user_id()
-    ong_service.update_ong(ong, ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    ong_service.update_ong(ong, ong_id)
     return {"message": "Ong updated successfully."}
 
 
 @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
 async def delete_ong():
-    ong_email = jwt_bearer.get_ong_user_id()
-    result = ong_service.delete_ong(ong_email)
+    ong_id = jwt_bearer.get_ong_user_id()
+    result = ong_service.delete_ong(ong_id)
     if result:
         return {"message": "Ong deleted successfully."}
     else:

@@ -1,4 +1,4 @@
-import bson
+from bson import ObjectId
 from datetime import datetime
 from datetime import datetime
 import bcrypt
@@ -26,12 +26,12 @@ class OngService:
             print(f"Error creating ong: {e}")
             return False
 
-    def update_ong(self, ong: OngModel, ong_email: str) -> bool:
+    def update_ong(self, ong: OngModel, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 # TODO: O update n funciona muito bem ainda, ajustar isso
                 result = self.ongs_collection.update_one(
-                    {"email": ong_email},
+                    {"_id": ObjectId(ong_id)},
                     {"$set": ong.dict()}
                 )
                 return True if result else False
@@ -39,18 +39,18 @@ class OngService:
             print(f"Error updating ong: {e}")
             return False
 
-    def delete_ong(self, ong_email: str) -> bool:
+    def delete_ong(self, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 deleted_ongs = self.db.get_database().get_collection("deleted_ongs")
                 # Verifica se o array ong.animals está vazio
                 
-                animals = self.get_ong_animals(ong_email)
+                animals = self.get_ong_animals(ong_id)
                 if not animals:
-                    ong = self.ongs_collection.find_one({"email": ong_email})
+                    ong = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
                     result = deleted_ongs.insert_one(ong)
                     if result:
-                        result = self.ongs_collection.delete_one({"email": ong_email})
+                        result = self.ongs_collection.delete_one({"_id": ObjectId(ong_id)})
                     return True if result else False
 
                 # Se o array ong.animals não estiver vazio, retorna False
@@ -60,9 +60,9 @@ class OngService:
             print(f"Error deleting ong: {e}")
             return False
 
-    def get_ong_by_email(self, ong_email: str):
+    def get_ong_by_email(self, ong_id: str):
         try:
-            result = self.ongs_collection.find_one({"email": ong_email})
+            result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
                 return OngModel.ong_helper(result)
             return None
@@ -80,11 +80,11 @@ class OngService:
             print(f"Error getting ong by cnpj: {e}")
             return None
 
-    def get_ong_animals(self, ong_email: str) -> list:
+    def get_ong_animals(self, ong_id: str) -> list:
         try:
             result = list(self.ongs_collection.aggregate([
                 {
-                    "$match": {"email": ong_email}
+                    "$match": {"_id": ObjectId(ong_id)}
                 },
                 {
                     "$lookup": {
@@ -115,7 +115,7 @@ class OngService:
         try:
             with self.db.session.start_transaction():
                 result = self.ongs_collection.update_one(
-                    {"_id": bson.ObjectId(ong_id)},
+                    {"_id": ObjectId(ong_id)},
                     {"$push": {"animals": animal_id}}
                 )
                 return True if result else False
