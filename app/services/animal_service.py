@@ -67,3 +67,15 @@ class AnimalService:
         except Exception as e:
             print(f"Error getting animal: {e}")
             return None
+    
+    def insert_form(self, animal_id: str, form_id: str):
+        try:
+            with self.db.session.start_transaction():
+                result = self.animals_collection.update_one(
+                    {"_id": ObjectId(animal_id)},
+                    {"$push": {"forms": form_id}}
+                )
+                return True if result else False
+        except Exception as e:
+            print(f"Error updating ong animals: {e}")
+            return False

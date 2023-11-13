@@ -15,6 +15,7 @@ class AnimalModel(BaseModel):
     adopter: str = ""
     created_at: str = ""
     updated_at: str = datetime.now()
+    forms: list = []
 
     class Config:
         schema_extra = {
@@ -58,4 +59,5 @@ class AnimalModel(BaseModel):
             "adoption_requirements": animal["adoption_requirements"],
             "photo": animal["photo"],
             "adopter": animal["adopter"],
+            "forms": animal["forms"],
         }
