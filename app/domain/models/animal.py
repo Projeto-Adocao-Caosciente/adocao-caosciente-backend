@@ -59,5 +59,5 @@ class AnimalModel(BaseModel):
             "adoption_requirements": animal["adoption_requirements"],
             "photo": animal["photo"],
             "adopter": animal["adopter"],
-            "forms": animal["forms"],
+            "forms": [str(form) for form in animal["forms"]]
         }
