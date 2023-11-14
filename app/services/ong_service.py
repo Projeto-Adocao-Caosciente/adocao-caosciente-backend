@@ -60,7 +60,7 @@ class OngService:
             print(f"Error deleting ong: {e}")
             return False
 
-    def get_ong_by_email(self, ong_id: str):
+    def get_ong_by_id(self, ong_id: str):
         try:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
