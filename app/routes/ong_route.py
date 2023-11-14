@@ -14,7 +14,7 @@ jwt_bearer = JWTBearer()
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong():
     ong_id = jwt_bearer.get_ong_user_id()
-    ong = ong_service.get_ong_by_email(ong_id)
+    ong = ong_service.get_ong_by_id(ong_id)
     return {"message": "Ong retrieved successfully.", "data": { "ong": ong }}
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
