@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from app.domain.models.login import LoginModel
 from app.domain.models.ong import OngModel
 from app.services.login_service import LoginService
@@ -23,8 +24,14 @@ async def login(
 async def register(ong: OngModel):
     result = login_service.register(ong)
     if result:
-        return {"message": "User created successfully."}
-    return {"message": "Failed to create user."}
+        return JSONResponse(
+            status_code=201,
+            content={"message": "User created successfully."}
+        )
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Failed to create user."}
+    )
 
     
 @router.post("/refresh", status_code=200)
