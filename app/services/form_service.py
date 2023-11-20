@@ -40,11 +40,22 @@ class FormService:
         try:
             animals = self.ong_service.get_ong_animals(ong_id)
             has_animal = False
+            animal_object = None
+            has_form = False
             for animal in animals:
                 if str(animal.get("id")) == animal_id:
                     has_animal = True
+                    animal_object = animal
+                    break
             if not has_animal:
-                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
+                return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
+            
+            for f in animal_object.get("forms"):
+                if f == form_id:
+                    has_form = True
+            
+            if not has_form:
+                return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "This form doesn't belong to this animal", None)
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
                 return ResponseDTO(200,"Form gotten successfully", FormModel.form_helper(result))

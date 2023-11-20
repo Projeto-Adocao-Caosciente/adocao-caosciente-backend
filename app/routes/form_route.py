@@ -22,7 +22,7 @@ async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.C
     result = form_service.create_form(ong_id, animal_id, form)
     print(result.message)
     return JSONResponse(
-        status_code = result.data,
+        status_code = result.status,
         content={"message": result.message, "data": result.data}
     )
 
