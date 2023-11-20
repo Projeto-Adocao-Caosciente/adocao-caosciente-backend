@@ -50,15 +50,27 @@ class FormService:
                 return ResponseDTO(200,"Form gotten successfully", FormModel.form_helper(result))
             return ResponseDTO(400, "Couldn't find Form. Aborting.", None)
         except Exception as e:
-            print(f"Error getting Form: {e}")
-            return ResponseDTO(400, "Erro Getting Form:"+e, None)
+            message = f"Error getting Form: {e}"
+            print(message)
+            return ResponseDTO(400, message, None)
         
         
-    def get_questions(self, formID: str, answers: bool = False) -> list:
-        # TODO: Dado o ID do Form, retorna a lista de questões com as altenativas, se answers == True, as alternativas corretas são marcadas
-        return
+    def get_questions(self, ong_id: str,  animal_id:str, form_id: str, answers: bool = False) -> ResponseDTO:
+        result = self.get_form_by_id(ong_id, animal_id, form_id)
+        if result.status != 200:
+            return result
+        questions = result.data.get("questions")
+        for q in questions:
+            new_choice = []
+            for c in q.get('choices'):
+                new_choice.append(c[0])
+            q['choices'] = new_choice
+            print(q)
+        del result.data['animal_id']
+        del result.data['answer_sheets']
+        return result
     
     
-    def get_answer_sheets(self, formID) -> list:
+    def get_answer_sheets(self, formID) -> ResponseDTO:
         #TODO: Retorna uma lista dos IDs das folhas de respostas dos participantes
         return
