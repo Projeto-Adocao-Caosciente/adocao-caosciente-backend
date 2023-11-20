@@ -23,9 +23,11 @@ async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.C
     return result
 
 # TODO: ler Form via ID, verificando se a ong tem permissão
-@router.get("/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_form(form_id: str):
-    pass
+@router.get("/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
+async def get_form(animal_id:str, form_id: str):
+    ong_id = jwt_bearer.get_ong_user_id()
+    result = form_service.get_form_by_id(ong_id, animal_id, form_id)
+    print(result.data)
 
 
 

@@ -21,6 +21,7 @@ class FormService:
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
                         has_animal = True
+                        break
                 if not has_animal:
                     return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
                 form.animal_id = animal_id
@@ -35,8 +36,15 @@ class FormService:
             print(f"Error creating Forms: {e}")
             return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Error Creating Form: " + str(e), None)
     
-    def get_form_by_id(self, form_id: str):
+    def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str):
         try:
+            animals = self.ong_service.get_ong_animals(ong_id)
+            has_animal = False
+            for animal in animals:
+                if str(animal.get("id")) == animal_id:
+                    has_animal = True
+            if not has_animal:
+                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
                 return ResponseDTO(200,"Form gotten successfully", FormModel.form_helper(result))
