@@ -15,14 +15,14 @@ class AnimalService:
         self.ong_service = ong_service
         self.animals_collection = self.db.get_database().get_collection("animals")
 
-    def create_animal(self, animal: AnimalModel, ong_email: str) -> bool:
+    def create_animal(self, animal: AnimalModel, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 animal.created_at = datetime.now()
                 result = self.animals_collection.insert_one(animal.dict())
                 if result == False:
                     raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Error creating animal.")
-                ong = self.ong_service.get_ong_by_email(ong_email)
+                ong = self.ong_service.get_ong_by_id(ong_id)
                 if ong is None:
                     raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Ong not found.")
                 result = self.ong_service.update_ong_animals(ong["id"], result.inserted_id)
@@ -54,9 +54,9 @@ class AnimalService:
             print(f"Error deleting animal: {e}")
             return False
 
-    def get_animal(self, animal_id: str, ong_email: str):
+    def get_animal(self, animal_id: str, ong_id: str):
         try:
-            ong = self.ong_service.get_ong_by_email(ong_email)
+            ong = self.ong_service.get_ong_by_id(ong_id)
             # TODO: Se a ong não existir mais, não retornar o animal, isso ta certo?
             if ong is None:
                 return None
