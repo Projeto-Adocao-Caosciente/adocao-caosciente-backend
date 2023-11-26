@@ -1,6 +1,6 @@
 import json
 from fastapi import FastAPI, Response
-from app.routes import ong_route, animal_route, login_route
+from app.routes import ong_route, animal_route, login_route, adopter_route
 from fastapi.middleware.cors import CORSMiddleware
 
 api = FastAPI(
@@ -41,6 +41,7 @@ api.add_middleware(
 api.include_router(ong_route.router)
 api.include_router(animal_route.router)
 api.include_router(login_route.router)
+api.include_router(adopter_route.router)
 
 # TODO: Todas as services devem retornar um DTO padrão com mensagem de erro, status e dado. dessa forma 
 # a rota se preocupa apenas em retornar o DTO e não precisa se preocupar com o status code
