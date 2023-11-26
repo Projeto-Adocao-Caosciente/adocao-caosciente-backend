@@ -4,81 +4,76 @@ import bcrypt
 from app.domain.models.animal import AnimalModel
 from app.domain.models.ong import OngModel
 from app.domain.database.db import Database
-from app.utils.utils import Utils
-from pymongo import errors as pm_Errors
+import http
+from app.domain.models.dto.response import ResponseDTO
 
 class OngService:
     def __init__(self):
         self.db = Database()
         self.ongs_collection = self.db.get_database().get_collection("ongs")
 
-    def create_ong(self, ong: OngModel) -> bool:
-        print(ong)
+    def create_ong(self, ong: OngModel) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
                 # FIXME: Encriptar senha de alguma forma, aqui dá erro -> 'OngModel' object has no attribute 'password'
                 # salt = bcrypt.gensalt()  # definir rounds torna a operação mais lenta
                 # ong.password = bcrypt.hashpw(
-                ong.created_at = datetime.now()
-                ong_dict = ong.dict()
-                ong_dict["phone"] = Utils.treat_phone(ong_dict["phone"])
-                result = self.ongs_collection.insert_one(ong_dict)
-                return True if result else False
+                current_time = datetime.now().isoformat()
+                ong.created_at = current_time
+                ong.updated_at = current_time
+                result = self.ongs_collection.insert_one(ong.dict())
+                if result:
+                    return ResponseDTO({"id": str(result.inserted_id)}, "Ong created successfully", http.HTTPStatus.CREATED)
+                else:
+                    return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating ong: {e}")
-            return False
+            return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
 
-    def update_ong(self, ong: OngModel, ong_email: str) -> list[bool, str, int]:
+    def update_ong(self, ong: OngModel, ong_id: str) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                # TODO: O update n funciona muito bem ainda, ajustar isso
-                old_ong = self.get_ong_by_email(ong_email)
-                
-                # Create a dict of the fields that needs to be updated
-                update_fields = {}
-                
-                for key, value in ong.dict().items():
-                    
-                    # Update keys that is diferent from old data and is not empty, ignore _id, created at and updated_at
-                    if key not in ["_id", "created_at", "updated_at"] and value != old_ong.get(key) and value:
-                        # if trying to change password, raise Exception
-                        if key == "password":
-                            raise Exception("Tried to edit password")
-                        if key == "phone":
-                            value = Utils.treat_phone(value)
-                        update_fields[key] = value
-                # if any field was modified 
-                if update_fields:
-                # change value of updated_at to now
-                    update_fields["updated_at"] = datetime.now()
+                old_ong = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
 
-                    # Try to update the ong document
-                    try:
-                        result = self.ongs_collection.update_one(
-                            {"email": ong_email},
-                            {"$set": update_fields}
-                        )
-                    # Catch the duplicate key error
-                    except pm_Errors.DuplicateKeyError:
-                        return [False, "Ong with this email or CNPJ already exists", 409]
+                if not old_ong:
+                    return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
+                update_fields = { field : value for field, value in ong.dict().items() if value != old_ong[field] and value is not None }
+                if len(update_fields) == 0:
+                    return ResponseDTO(None, "Ong not modified", http.HTTPStatus.OK)
+                
+                if "password" in update_fields:
+                    return ResponseDTO(None, "Password cannot be updated", http.HTTPStatus.BAD_REQUEST)
+                
+                if "cnpj" in update_fields:
+                    return ResponseDTO(None, "CNPJ cannot be updated", http.HTTPStatus.BAD_REQUEST)
 
-                    # If the update was successful, return a success response
+                # Check if email or cnpj is already in use
+                if "email" in update_fields:
+                    ong = self.ongs_collection.find_one({"email": update_fields["email"]})
+                    if ong:
+                        return ResponseDTO(None, "Email already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
+                if "cnpj" in update_fields:
+                    ong = self.ongs_collection.find_one({"cnpj": update_fields["cnpj"]})
+                    if ong:
+                        return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
+
+                try:
+                    result = self.ongs_collection.update_one(
+                        {"_id": ObjectId(ong_id)},
+                        {"$set": update_fields}
+                    )
                     if result:
-                        return [True, "Ong updated successfully", 200]
-                    # Otherwise, return an error response
+                        return ResponseDTO(None, "Ong updated successfully", http.HTTPStatus.OK)
                     else:
-                        return [False, "Error on update", 400]
+                        return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
+                except Exception as err:
+                    print(err)
+                    return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            msg = f"Error updating ong: {e}"
-            erro = 510
-            print(msg)
-            if str(e) == "Tried to edit password":
-                erro = 422
-                
-            return [False,str(e), erro]
+            print(f"Error updating ong: {e}")
+            return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
 
-    
-    def delete_ong(self, ong_email: str) -> bool:
+    def delete_ong(self, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 deleted_ongs = self.db.get_database().get_collection("deleted_ongs")

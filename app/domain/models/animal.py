@@ -14,10 +14,10 @@ class AnimalModel(BaseModel):
     photo: str = ""
     adopter: str = ""
     created_at: str = ""
-    updated_at: str = datetime.now()
+    updated_at: str = datetime.now().isoformat()
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "name": "Simba",
             "type": "Cat",
             "breed": "Orange",

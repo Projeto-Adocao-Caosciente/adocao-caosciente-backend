@@ -19,11 +19,11 @@ class AdopterModel(BaseModel):
     animals: List[str] =  []
     responses: List[str] = []
     created_at: str = ""
-    updated_at: str = datetime.now()
+    updated_at: str = datetime.now().isoformat()
     password: str = ""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "cpf": "12345678901",
             "name": "I Ryan Maiden",
             "phone": "(11) 98765-4321",

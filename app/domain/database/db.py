@@ -1,8 +1,9 @@
 from pymongo import MongoClient
 from app.config.settings import settings
 
-DATABASE_URL = settings.DATABASE_URL
-DATABASE_NAME = settings.DATABASE_NAME
+env = settings.ENVIRONMENT
+DATABASE_URL = settings.DATABASE_URL if env != "test" else settings.DATABASE_URL_TEST
+DATABASE_NAME = settings.DATABASE_NAME if env != "test" else settings.DATABASE_NAME_TEST
 
 class Database:
     def __init__(self):

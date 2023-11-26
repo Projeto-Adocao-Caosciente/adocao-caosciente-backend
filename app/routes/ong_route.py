@@ -36,26 +36,21 @@ async def read_ong_animals():
     )
 
 @router.post("/", status_code=201)
-async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
-    result = ong_service.create_ong(ong)
-    if result:
-        return JSONResponse(
-            status_code=201,
-            content={"message": "Ong created successfully."}
-        )
+async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
+    response = ong_service.create_ong(ong)
     return JSONResponse(
-        status_code=500,
-        content={"message": "Failed to create ong."}
+        status_code=response.status,
+        content=response.dict()
     )
 
 
-@router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
+@router.patch("/", dependencies=[Depends(jwt_bearer)])
+async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
     ong_id = jwt_bearer.get_ong_user_id()
-    ong_service.update_ong(ong, ong_id)
+    response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
-        status_code=200,
-        content={"message": "Ong updated successfully."}
+        status_code=response.status,
+        content=response.dict()
     )
 
 

@@ -22,15 +22,10 @@ async def login(
 
 @router.post("/register", status_code=201)
 async def register(ong: OngModel):
-    result = login_service.register(ong)
-    if result:
-        return JSONResponse(
-            status_code=201,
-            content={"message": "User created successfully."}
-        )
+    response = login_service.register(ong)
     return JSONResponse(
-        status_code=500,
-        content={"message": "Failed to create user."}
+        status_code=response.status,
+        content=response.dict()
     )
 
     

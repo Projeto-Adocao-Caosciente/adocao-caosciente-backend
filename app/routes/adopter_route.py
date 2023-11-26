@@ -26,7 +26,7 @@ async def read_adopter_animals():
     return {"message": "Adopter animals retrieved successfully.", "data": { "animals": animals }}
 
 @router.post("/", status_code=201)
-async def create_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.schema_extra)):
+async def create_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
     result = adopter_service.create_adopter(adopter)
     if result:
         return {"message": "Adopte created successfully."}
