@@ -1,3 +1,7 @@
+# Dependencies for pytest_bdd
+six==1.15.0
+
+
 fastapi==0.103.2
 uvicorn[standard]
 pymongo==4.5.0
@@ -5,9 +9,6 @@ PyJWT==2.8.0
 pydantic-settings==2.0.3
 bcrypt==4.0.1
 pytest==7.4.3
-pytest_bdd~=4.0.0
-faker==20.1.0
+pytest_bdd==4.0.2
+Faker==20.1.0
 
-
-# Dependencies for pytest_bdd
-six==1.15.0
