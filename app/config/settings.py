@@ -2,11 +2,11 @@ import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT")
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
-    DATABASE_NAME: str = os.getenv("DATABASE_NAME")
-    DATABASE_URL_TEST: str = os.getenv("DATABASE_URL_TEST")
-    DATABASE_NAME_TEST: str = os.getenv("DATABASE_NAME_TEST")
+    ENVIRONMENT: str = os.environ.get("ENVIRONMENT", "None")
+    DATABASE_URL: str = os.environ.get("DATABASE_URL", "None")
+    DATABASE_NAME: str = os.environ.get("DATABASE_NAME", "None")
+    DATABASE_URL_TEST: str = os.environ.get("DATABASE_URL_TEST", "None")
+    DATABASE_NAME_TEST: str = os.environ.get("DATABASE_NAME_TEST", "None")
 
     class Config:
         env_file = ".env"
