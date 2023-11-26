@@ -54,7 +54,7 @@ class OngModel(BaseModel):
         }
 
     @staticmethod
-    def ong_helper(ong) -> dict:
+    def helper(ong) -> dict:
         return {
             "id": str(ong["_id"]),
             "cnpj": ong["cnpj"],

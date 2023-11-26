@@ -4,23 +4,23 @@ from pydantic import BaseModel
 
 
 class AdopterModel(BaseModel):
-    cpf: str = ""
-    name: str = ""
-    phone: str = ""
-    state: str = ""
-    city: str = ""
-    address: str = ""
-    number: str = ""
-    cep: str = ""
-    birthdate: str = ""
-    gender: str = ""
-    email: str = ""
-    photo: str = ""
+    cpf: str = None
+    name: str = None
+    phone: str = None
+    state: str = None
+    city: str = None
+    address: str = None
+    number: str = None
+    cep: str = None
+    birthdate: str = None
+    gender: str = None
+    email: str = None
+    photo: str = None
     animals: List[str] =  []
     responses: List[str] = []
-    created_at: str = ""
+    created_at: str = None
     updated_at: str = datetime.now().isoformat()
-    password: str = ""
+    password: str = None
 
     class Config:
         json_schema_extra = {
@@ -60,7 +60,7 @@ class AdopterModel(BaseModel):
         }
     
     @staticmethod
-    def adopter_helper(adopter) -> dict:
+    def helper(adopter) -> dict:
         return {
             "id": str(adopter["_id"]),
             "cpf": adopter["cpf"],

@@ -1,9 +1,12 @@
 from datetime import datetime
 from bson import ObjectId
+import http
 
 from app.domain.database.db import Database
 from app.domain.models.adopter import AdopterModel
 from app.domain.models.animal import AnimalModel
+from app.domain.models.dto.response import ResponseDTO
+
 
 class AdopterService:
     def __init__(self):
@@ -14,9 +17,13 @@ class AdopterService:
         print(adopter)
         try:
             with self.db.session.start_transaction():
-                adopter.created_at = datetime.now()
+                current_time = datetime.now().isoformat()
+                adopter.created_at = current_time
                 result = self.adopter_collection.insert_one(adopter.dict())
-                return True if result else False
+                if result:
+                    return ResponseDTO({"id": str(result.inserted_id)}, "Adopter created successfully", http.HTTPStatus.CREATED)
+                else:
+                    return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Erro creating adopter: {e}")
             return False
