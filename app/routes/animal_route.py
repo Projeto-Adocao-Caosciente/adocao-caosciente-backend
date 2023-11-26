@@ -32,7 +32,7 @@ async def read_animal(animal_id: str):
 
 @router.post("/",dependencies=[Depends(jwt_bearer)], status_code=201)
 async def create_animal(
-    animal: AnimalModel = Body(..., example=AnimalModel.Config.schema_extra)
+    animal: AnimalModel = Body(..., example=AnimalModel.Config.json_schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
     ong_id = jwt_bearer.get_ong_user_id()
@@ -51,7 +51,7 @@ async def create_animal(
 @router.put("/{animal_id}",dependencies=[Depends(jwt_bearer)], status_code=200)
 async def update_animal(
     animal_id: str,
-    animal: AnimalModel = Body(..., example=AnimalModel.Config.schema_extra)
+    animal: AnimalModel = Body(..., example=AnimalModel.Config.json_schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
     ong_id = jwt_bearer.get_ong_user_id()

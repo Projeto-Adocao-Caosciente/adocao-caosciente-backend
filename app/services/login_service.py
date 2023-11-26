@@ -1,6 +1,8 @@
+import http
 from app.services.ong_service import OngService
 from fastapi import HTTPException
 from app.domain.models.ong import OngModel
+from app.domain.models.dto.response import ResponseDTO
 
 
 class LoginService:
@@ -17,6 +19,10 @@ class LoginService:
                 status_code=401, detail="invalid user or password")
         return OngModel.ong_helper(ong)
 
-    def register(self, ong: OngModel):
-        # TODO: No futuro talvez tenha cadastro de adodante, voluntario, aqui é onde a lógica vai acontecer
-        return self.ong_service.create_ong(ong)
+    def register(self, ong: OngModel) -> ResponseDTO:
+        response = self.ong_service.create_ong(ong)
+
+        if response.status != http.HTTPStatus.CREATED:
+            return ResponseDTO(None, "failed to register ong", http.HTTPStatus.BAD_REQUEST)
+        else:
+            return ResponseDTO(None, "ong registered successfully", http.HTTPStatus.CREATED)
