@@ -70,7 +70,7 @@ class AnimalService:
             print(f"Error getting animal: {e}")
             return None
     
-    def insert_form(self, animal_id: str, form_id: str):
+    def insert_form(self, animal_id: str, form_id: str) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
                 result = self.animals_collection.update_one(

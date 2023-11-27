@@ -27,7 +27,9 @@ class FormService:
                 form.animal_id = animal_id
                 result = self.form_collection.insert_one(form.dict())
                 if result:
-                    self.animal_service.insert_form(animal_id, result.inserted_id)
+                    response = self.animal_service.insert_form(animal_id, result.inserted_id)
+                    if response.status != http.HTTPStatus.OK :
+                        return response
                     new_form = self.form_collection.find_one(result.inserted_id)
                     return ResponseDTO(http.HTTPStatus.CREATED,"Form created successfully", FormModel.form_helper(new_form))
                 else:
