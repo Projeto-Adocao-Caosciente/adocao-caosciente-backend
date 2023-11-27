@@ -78,10 +78,10 @@ class AnimalService:
                     {"$push": {"forms": form_id}}
                 )
                 if result:
-                    return ResponseDTO(http.HTTPStatus.OK, "Form inserted", result)
+                    return ResponseDTO(result, "Form inserted", http.HTTPStatus.OK)
                 else:
-                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Could not insert form", None)
+                    return ResponseDTO(None, "Could not insert form", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             msg = f"Error updating ong animals: {e}"
             print(msg)
-            return ResponseDTO(http.HTTPStatus.BAD_REQUEST, msg, None)
+            return ResponseDTO(None, msg, http.HTTPStatus.BAD_REQUEST)
