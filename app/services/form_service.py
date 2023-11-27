@@ -23,7 +23,7 @@ class FormService:
                         has_animal = True
                         break
                 if not has_animal:
-                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
+                    return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
                 form.animal_id = animal_id
                 result = self.form_collection.insert_one(form.dict())
                 if result:
