@@ -75,16 +75,3 @@ class AdopterService:
         except Exception as e:
             print(f"Error getting ong animals: {e}")
             return []
-        
-    def update_adopter_animals(self, adopter_id, animal_id):
-        try:
-            with self.db.session.start_transaction():
-                result = self.adopter_collection.update_one(
-                    {"_id": ObjectId(adopter_id)},
-                    {"$push": {"animals": animal_id}}
-                )
-                return True if result else False
-        except Exception as e:
-            print(f"Error updating adopter animals: {e}")
-            return False
-        
