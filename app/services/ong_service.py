@@ -98,7 +98,7 @@ class OngService:
         try:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
-                return OngModel.ong_helper(result)
+                return OngModel.helper(result)
             return None
         except Exception as e:
             print(f"Error getting ong: {e}")

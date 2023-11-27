@@ -14,16 +14,21 @@ jwt_bearer = JWTBearer()
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     ong = ong_service.get_ong_by_id(ong_id)
+    if ong:
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Ong retrieved successfully.", "data": { "ong": ong }}
+        )
     return JSONResponse(
-        status_code=200,
-        content={"message": "Ong retrieved successfully.", "data": { "ong": ong }}
+        status_code=404,
+        content="ONG not found"
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong_animals():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     animals = ong_service.get_ong_animals(ong_id)
     if len(animals) == 0:
         return JSONResponse(
@@ -46,7 +51,7 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
 
 @router.patch("/", dependencies=[Depends(jwt_bearer)])
 async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
         status_code=response.status,
@@ -56,7 +61,7 @@ async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
 
 @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
 async def delete_ong():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     result = ong_service.delete_ong(ong_id)
     if result:
         return JSONResponse(

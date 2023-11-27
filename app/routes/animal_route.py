@@ -18,7 +18,7 @@ jwt_bearer = JWTBearer()
 
 @router.get("/{animal_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_animal(animal_id: str):
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     animal = animal_service.get_animal(animal_id, ong_id)
     if animal is None:
         return JSONResponse(
@@ -35,7 +35,7 @@ async def create_animal(
     animal: AnimalModel = Body(..., example=AnimalModel.Config.json_schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     result = animal_service.create_animal(animal, ong_id)
     if result:
         return JSONResponse(
@@ -54,7 +54,7 @@ async def update_animal(
     animal: AnimalModel = Body(..., example=AnimalModel.Config.json_schema_extra)
 ):
     # TODO: Validar se a a ong é valida de fato
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     animal.ong = ong_id
     result = animal_service.update_animal(animal, animal_id)
     if result:

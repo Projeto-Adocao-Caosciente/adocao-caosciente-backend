@@ -32,7 +32,7 @@ class AdopterService:
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
-                return AdopterModel.adopter_helper(result)
+                return AdopterModel.helper(result)
             return None
         except Exception as e:
             print(f"Error getting adopter: {e}")
