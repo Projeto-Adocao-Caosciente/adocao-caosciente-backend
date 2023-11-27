@@ -29,15 +29,10 @@ async def read_ong():
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong_animals():
     ong_id = jwt_bearer.get_user_id()
-    animals = ong_service.get_ong_animals(ong_id)
-    if len(animals) == 0:
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Ong has no animals.", "data": { "animals": animals }}
-        )
+    response = ong_service.get_ong_animals(ong_id)
     return JSONResponse(
-        status_code=200,
-        content={"message": "Ong animals retrieved successfully.", "data": { "animals": animals }}
+        status_code=response.status,
+        content=response.dict()
     )
 
 @router.post("/", status_code=201)
@@ -45,7 +40,7 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
     response = ong_service.create_ong(ong)
     return JSONResponse(
         status_code=response.status,
-        content=response.model_dump()
+        content=response.dict()
     )
 
 
@@ -55,5 +50,5 @@ async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
     response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
         status_code=response.status,
-        content=response.model_dump()
+        content=response.dict()
     )

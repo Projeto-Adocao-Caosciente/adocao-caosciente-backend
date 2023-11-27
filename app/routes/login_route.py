@@ -36,7 +36,7 @@ async def profile():
     response = login_service.get_user(id, roles)
     return JSONResponse(
         status_code=response.status,
-        content=response.model_dump()
+        content=response.dict()
     )
 
 @router.post("/register_ong")
@@ -44,7 +44,7 @@ async def register_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sc
     response = login_service.register(ong)
     return JSONResponse(
         status_code=response.status,
-        content=response.model_dump()
+        content=response.dict()
     )
 
 @router.post("/register_adopter")
@@ -52,5 +52,5 @@ async def register_adopter(adopter: AdopterModel = Body(..., example=AdopterMode
     response = login_service.register(adopter)
     return JSONResponse(
         status_code=response.status,
-        content=response.model_dump()
+        content=response.dict()
     )

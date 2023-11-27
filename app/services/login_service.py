@@ -72,10 +72,10 @@ class LoginService:
         if "ong" in roles:
             result = self.ong_service.get_ong_by_id(id)
             if result:
-                return ResponseDTO(result, "User retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": 1, "user": result}, "User retrieved successfully", http.HTTPStatus.OK)
         elif "user" in roles:
             result = self.adopter_service.get_adopter_by_id(id)
             if result:
-                return ResponseDTO(result, "User retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": 2, "user": result}, "User retrieved successfully", http.HTTPStatus.OK)
         
         return ResponseDTO(None, "Failed to get user", http.HTTPStatus.BAD_REQUEST)

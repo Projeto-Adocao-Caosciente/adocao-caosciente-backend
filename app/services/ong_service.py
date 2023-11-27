@@ -111,7 +111,7 @@ class OngService:
             print(f"Error getting ong by cnpj: {e}")
             return None
 
-    def get_ong_animals(self, ong_id: str) -> list:
+    def get_ong_animals(self, ong_id: str) -> ResponseDTO:
         try:
             result = list(self.ongs_collection.aggregate([
                 {
@@ -135,12 +135,12 @@ class OngService:
                 }
             ]))
             if result:
-                animals = result[0]["animals"]
-                return [AnimalModel.animal_helper(animal) for animal in animals]
-            return []
+                animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
+                return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
         except Exception as e:
             print(f"Error getting ong animals: {e}")
-            return []
+            return ResponseDTO(None, "Error on get", http.HTTPStatus.BAD_REQUEST)
     
     def update_ong_animals(self, ong_id, animal_id):
         try:
