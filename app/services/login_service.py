@@ -1,4 +1,5 @@
 import http
+from typing import Union
 from app.services.ong_service import OngService
 from app.services.adopter_service import AdopterService
 from fastapi import HTTPException
@@ -39,17 +40,17 @@ class LoginService:
 
         return model.helper(entitie)
 
-    def register(self, model: OngModel | AdopterModel) -> ResponseDTO:
-        if "cnpj" in model.dict():
-            if len(model.dict().get("cnpj")) != 14:
+    def register(self, model: Union[OngModel, AdopterModel]) -> ResponseDTO:
+        if "cnpj" in model.model_dump():
+            if len(model.model_dump().get("cnpj")) != 14:
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid CNPJ"
                 )
             response = self.ong_service.create_ong(model)
 
-        elif "cpf" in model.dict():
-            if len(model.dict().get("cpf")) != 11:
+        elif "cpf" in model.model_dump():
+            if len(model.model_dump().get("cpf")) != 11:
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid CPF"

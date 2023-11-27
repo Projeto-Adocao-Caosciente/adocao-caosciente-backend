@@ -57,18 +57,3 @@ async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
         status_code=response.status,
         content=response.model_dump()
     )
-
-
-@router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-async def delete_ong():
-    ong_id = jwt_bearer.get_user_id()
-    result = ong_service.delete_ong(ong_id)
-    if result:
-        return JSONResponse(
-            status_code=200,
-            content={"message": "Ong deleted successfully."}
-        )
-    return JSONResponse(
-        status_code=500,
-        content={"message": "Error deleting Ong"}
-    )

@@ -43,9 +43,6 @@ class OngService:
                 
                 if "password" in update_fields:
                     return ResponseDTO(None, "Password cannot be updated", http.HTTPStatus.BAD_REQUEST)
-                
-                if "cnpj" in update_fields:
-                    return ResponseDTO(None, "CNPJ cannot be updated", http.HTTPStatus.BAD_REQUEST)
 
                 # Check if email or cnpj is already in use
                 if "email" in update_fields:
@@ -56,7 +53,7 @@ class OngService:
                     ong = self.ongs_collection.find_one({"cnpj": update_fields["cnpj"]})
                     if ong:
                         return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
-
+                
                 try:
                     result = self.ongs_collection.update_one(
                         {"_id": ObjectId(ong_id)},
