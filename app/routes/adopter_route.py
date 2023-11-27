@@ -14,11 +14,16 @@ jwt_bearer = JWTBearer()
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_adopter():
-    adopter_id = jwt_bearer.get_adopter_user_id()
+    adopter_id = jwt_bearer.get_user_id()
     adopter = adopter_service.get_adopter_by_id(adopter_id)
+    if adopter:
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Adopter retrieved seccessully.", "data": {"adopter": adopter}}
+        )
     return JSONResponse(
-        status_code=200,
-        content={"message": "Adopter retrieved seccessully.", "data": {"adopter": adopter}}
+        status_code=404,
+        content="Adopter not found"
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)

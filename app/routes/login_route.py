@@ -17,9 +17,9 @@ login_service = LoginService()
 async def login(
     login: LoginModel,
 ):
-    ong = login_service.authenticate(login.user, login.password)
-    token = JWTBearer.sign_jwt(ong["id"])
-    return {"access_token": token, "user": ong}
+    user = login_service.authenticate(login.user, login.password)
+    token = JWTBearer.sign_jwt(user["id"])
+    return {"access_token": token, "user": user}
 
 @router.post("/register_ong", status_code=201)
 async def register_ong(ong: OngModel):
