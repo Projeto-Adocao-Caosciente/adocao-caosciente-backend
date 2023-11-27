@@ -29,10 +29,10 @@ async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.C
 @router.get("/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def get_form(animal_id:str, form_id: str):
     ong_id = jwt_bearer.get_ong_user_id()
-    result = form_service.get_form_by_id(ong_id, animal_id, form_id)
+    response = form_service.get_form_by_id(ong_id, animal_id, form_id)
     return JSONResponse(
-        status_code = result.status,
-        content={"message": result.message, "data": result.data}
+        status_code = response.status,
+        content=response.dict()
     )
     
 @router.get("/questions/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
