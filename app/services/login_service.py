@@ -66,3 +66,15 @@ class LoginService:
             return ResponseDTO(None, "Failed to register user", http.HTTPStatus.BAD_REQUEST)
         else:
             return ResponseDTO(None, "User registered successfully", http.HTTPStatus.CREATED)
+
+    def get_user(self, id: str, roles: dict) -> ResponseDTO:
+        if "ong" in roles:
+            result = self.ong_service.get_ong_by_id(id)
+            if result:
+                return ResponseDTO(result, "User retrieved successfully", http.HTTPStatus.OK)
+        elif "user" in roles:
+            result = self.adopter_service.get_adopter_by_id(id)
+            if result:
+                return ResponseDTO(result, "User retrieved successfully", http.HTTPStatus.OK)
+        
+        return ResponseDTO(None, "Failed to get user", http.HTTPStatus.BAD_REQUEST)
