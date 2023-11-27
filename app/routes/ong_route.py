@@ -45,7 +45,7 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
     response = ong_service.create_ong(ong)
     return JSONResponse(
         status_code=response.status,
-        content=response.dict()
+        content=response.model_dump()
     )
 
 
@@ -55,7 +55,7 @@ async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
     response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
         status_code=response.status,
-        content=response.dict()
+        content=response.model_dump()
     )
 
 

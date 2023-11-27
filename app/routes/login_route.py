@@ -26,7 +26,7 @@ async def register_ong(ong: OngModel):
     response = login_service.register(ong)
     return JSONResponse(
         status_code=response.status,
-        content=response.dict()
+        content=response.model_dump()
     )
 
 @router.post("/register_adopter", status_code=201)

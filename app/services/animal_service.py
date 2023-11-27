@@ -19,7 +19,7 @@ class AnimalService:
         try:
             with self.db.session.start_transaction():
                 animal.created_at = datetime.now()
-                result = self.animals_collection.insert_one(animal.dict())
+                result = self.animals_collection.insert_one(animal.model_dump())
                 if result == False:
                     raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Error creating animal.")
                 ong = self.ong_service.get_ong_by_id(ong_id)
@@ -37,7 +37,7 @@ class AnimalService:
                 # TODO: O update n funciona muito bem ainda, ajustar isso
                 result = self.animals_collection.update_one(
                     {"_id": ObjectId(animal_id)},
-                    {"$set": animal.dict()}
+                    {"$set": animal.model_dump()}
                 )
                 return True if result else False
         except Exception as e:
