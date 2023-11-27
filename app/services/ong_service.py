@@ -28,7 +28,7 @@ class OngService:
                     return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating ong: {e}")
-            return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
 
     def update_ong(self, ong: OngModel, ong_id: str) -> ResponseDTO:
         try:
@@ -54,21 +54,18 @@ class OngService:
                     if ong:
                         return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
                 
-                try:
-                    result = self.ongs_collection.update_one(
-                        {"_id": ObjectId(ong_id)},
-                        {"$set": update_fields}
-                    )
-                    if result:
-                        return ResponseDTO(None, "Ong updated successfully", http.HTTPStatus.OK)
-                    else:
-                        return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
-                except Exception as err:
-                    print(err)
-                    return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
+                update_fields["updated_at"] = datetime.now().isoformat()
+                result = self.ongs_collection.update_one(
+                    {"_id": ObjectId(ong_id)},
+                    {"$set": update_fields}
+                )
+                if result:
+                    return ResponseDTO(None, "Ong updated successfully", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error updating ong: {e}")
-            return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
 
     def delete_ong(self, ong_id: str) -> bool:
         try:
@@ -91,15 +88,15 @@ class OngService:
             print(f"Error deleting ong: {e}")
             return False
 
-    def get_ong_by_id(self, ong_id: str):
+    def get_ong_by_id(self, ong_id: str) -> ResponseDTO:
         try:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
-                return OngModel.helper(result)
-            return None
+                return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             print(f"Error getting ong: {e}")
-            return None
+            return ResponseDTO(None, "Error on get ong by id", http.HTTPStatus.BAD_REQUEST)
 
     def get_ong_by_cnpj(self, cnpj: str):
         try:
@@ -113,6 +110,10 @@ class OngService:
 
     def get_ong_animals(self, ong_id: str) -> ResponseDTO:
         try:
+            response = self.get_ong_by_id(ong_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+        
             result = list(self.ongs_collection.aggregate([
                 {
                     "$match": {"_id": ObjectId(ong_id)}
@@ -140,16 +141,19 @@ class OngService:
             return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
         except Exception as e:
             print(f"Error getting ong animals: {e}")
-            return ResponseDTO(None, "Error on get", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error on get ong animals", http.HTTPStatus.BAD_REQUEST)
     
-    def update_ong_animals(self, ong_id, animal_id):
+    def update_ong_animals(self, ong_id, animal_id) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
                 result = self.ongs_collection.update_one(
                     {"_id": ObjectId(ong_id)},
                     {"$push": {"animals": animal_id}}
                 )
-                return True if result else False
+                if result:
+                    return ResponseDTO(None, "Ong animals updated successfully", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error updating ong animals: {e}")
-            return False
+            return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)

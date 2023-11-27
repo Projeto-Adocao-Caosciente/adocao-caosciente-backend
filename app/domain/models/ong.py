@@ -1,21 +1,20 @@
 from datetime import datetime
-from typing import Any, List, Optional
-from pydantic import BaseModel, Field, validator
-from app.utils.mask import Mask
+from typing import List, Optional
+from pydantic import BaseModel, Field
 from app.utils.utils import Utils
 
 class OngModel(BaseModel):
     cnpj: str = Field(None, min_length=14, max_length=14)
     name: str = Field(None, min_length=2, max_length=60)
     logo: str = Field(None, )
-    city: str = Field(None, )
-    state: str = Field(None, )
+    city: str = Field(None, min_length=2, max_length=60)
+    state: str = Field(None, min_length=2, max_length=60)
     phone: str = Field(None, min_length=10, max_length=12)
     email: str = Field(None, max_length=60)
     mission: str = Field(None, max_length=500)
-    foundation: str = Field(None, ) # YYYY-MM-DD
+    foundation: str = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     description: Optional[str] = Field(None, max_length=500) 
-    animals: List[str] =  []
+    animals: List[str] = Field([], )
     created_at: str = Field(None, )
     updated_at: str = datetime.now().isoformat()
     password: str = Field(None, min_length=4, max_length=60)

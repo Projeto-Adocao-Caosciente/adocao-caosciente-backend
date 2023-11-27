@@ -70,12 +70,16 @@ class LoginService:
 
     def get_user(self, id: str, roles: dict) -> ResponseDTO:
         if "ong" in roles:
-            result = self.ong_service.get_ong_by_id(id)
-            if result:
-                return ResponseDTO({"type": 1, "user": result}, "User retrieved successfully", http.HTTPStatus.OK)
+            response = self.ong_service.get_ong_by_id(id)
+            if response.status == http.HTTPStatus.OK:
+                return ResponseDTO({"type": 1, "user": response.data}, "User retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Wrong ong id", http.HTTPStatus.BAD_REQUEST)
         elif "user" in roles:
-            result = self.adopter_service.get_adopter_by_id(id)
-            if result:
-                return ResponseDTO({"type": 2, "user": result}, "User retrieved successfully", http.HTTPStatus.OK)
+            response = self.adopter_service.get_adopter_by_id(id)
+            if response.status == http.HTTPStatus.OK:
+                return ResponseDTO({"type": 2, "user": response.data}, "User retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Wrong user id", http.HTTPStatus.BAD_REQUEST)
+        else:
+            return ResponseDTO(None, "Invalid user", http.HTTPStatus.BAD_REQUEST)
         
         return ResponseDTO(None, "Failed to get user", http.HTTPStatus.BAD_REQUEST)

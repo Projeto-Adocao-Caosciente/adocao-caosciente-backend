@@ -1,15 +1,15 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 
 class AnimalModel(BaseModel):
-    name: str = ""
-    type: str = ""
-    breed: str = ""
-    height: str = ""
-    weight: str = ""
+    name: str = Field(None, min_length=2, max_length=60)
+    type: str = Field(None, min_length=2, max_length=60)
+    breed: str = Field(None, min_length=2, max_length=60)
+    height: str = Field(None, )
+    weight: str = Field(None, )
     special_needs: Optional[List[str]] = [""]
-    aditional_info: Optional[str] = ""
+    aditional_info: Optional[str] = Field(None, max_length=500) 
     adoption_requirements: List[str] = [""]
     photo: str = ""
     adopter: str = ""
