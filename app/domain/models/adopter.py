@@ -4,21 +4,39 @@ from pydantic import BaseModel
 
 
 class AdopterModel(BaseModel):
-    cpf: str = ""
-    name: str = ""
-    phone: str = ""
-    state: str = ""
-    city: str = ""
-    address: str = ""
-    number: str = ""
-    cep: str = ""
-    birthdate: str = ""
-    gender: str = ""
-    email: str = ""
-    animal: List[str] =  []
+    cpf: str = None
+    name: str = None
+    phone: str = None
+    state: str = None
+    city: str = None
+    address: str = None
+    number: str = None
+    cep: str = None
+    birthdate: str = None
+    gender: str = None
+    email: str = None
+    photo: str = None
+    animals: List[str] =  []
     responses: List[str] = []
-    created_at: str = ""
-    updated_at: str = datetime.now()
+    created_at: str = None
+    updated_at: str = datetime.now().isoformat()
+    password: str = None
+
+    class Config:
+        json_schema_extra = {
+            "cpf": "12345678901",
+            "name": "I Ryan Maiden",
+            "phone": "(11) 98765-4321",
+            "state": "ST",
+            "city": "City Name",
+            "address": "Address Name",
+            "number": "10",
+            "cep": "12.345-678",
+            "birthdate": "2003-01-01",
+            "gender": "Masculine",
+            "email": "adopter@gmail.com",
+            "password": "senha"
+        }
 
     def __dict__(self) -> dict:
         return {
@@ -33,10 +51,16 @@ class AdopterModel(BaseModel):
             'birthdate': self.birthdate,
             'gender': self.gender,
             'email': self.email,
+            'photo': self.photo,
+            'animals': self.animals,
+            'responses': self.responses,
+            'created_at': self.created_at,
+            'updated_at': datetime.now(),
+            'password': self.password,
         }
     
     @staticmethod
-    def adopter_helper(adopter) -> dict:
+    def helper(adopter) -> dict:
         return {
             "id": str(adopter["_id"]),
             "cpf": adopter["cpf"],
@@ -50,7 +74,8 @@ class AdopterModel(BaseModel):
             "birthdate": adopter["birthdate"],
             "gender": adopter["gender"],
             "email": adopter["email"],
-            "animal": adopter["animal"],
+            "photo": adopter["photo"],
+            "animals": adopter["animals"],
             "responses": adopter["responses"],
             "created_at": adopter["created_at"],
             "updated_at": adopter["updated_at"],

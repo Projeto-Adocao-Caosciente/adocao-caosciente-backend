@@ -47,7 +47,7 @@ class JWTBearer(HTTPBearer):
             print("Error decoding token: ", e)
             return None
 
-    def get_ong_user_id(self) -> str:
+    def get_user_id(self) -> str:
         token = self.credentials
         payload = self.decode_jwt(token)
         return payload["user_id"]

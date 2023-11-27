@@ -1,25 +1,27 @@
 from datetime import datetime
-from typing import List
+from typing import Any, List, Optional
 from pydantic import BaseModel, Field
+from app.utils.mask import Mask
+from app.utils.utils import Utils
 
 class OngModel(BaseModel):
-    cnpj: str = ""
-    name: str = ""
-    logo: str = ""
-    city: str = ""
-    state: str = ""
-    phone: str = ""
-    email: str = ""
-    mission: str = "" 
-    foundation: str = "" # YYYY-MM-DD
-    description: str =  ""
+    cnpj: str = None
+    name: str = None
+    logo: str = None
+    city: str = None
+    state: str = None
+    phone: str = None
+    email: str = None
+    mission: str = None 
+    foundation: str = None # YYYY-MM-DD
+    description: str = None 
     animals: List[str] =  []   
-    created_at: str =  ""   
-    updated_at: str = datetime.now()
-    password: str  = ""
+    created_at: str = None
+    updated_at: str = datetime.now().isoformat()
+    password: str = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "cnpj": "12345678901234",
             "name": "Ong Name",
             "logo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUTExMWFhUXGBgYGBgYGBgYGBgYGBgYGBgYGBgYHSggGBolHRgXITEhJSkrLi4uGB8zODMsNygtLisBCgo,",
@@ -40,7 +42,7 @@ class OngModel(BaseModel):
             'logo': self.logo,
             'city': self.city,
             'state': self.state,
-            'phone': self.phone,
+            'phone': Utils.convert_to_digit(self.phone),
             'email': self.email,
             'mission': self.mission,
             'foundation': self.foundation,
@@ -48,11 +50,11 @@ class OngModel(BaseModel):
             'description': self.description,
             'password': self.password,
             'created_at': self.created_at,
-            'updated_at': datetime.now(),
+            'updated_at': self.updated_at,
         }
 
     @staticmethod
-    def ong_helper(ong) -> dict:
+    def helper(ong) -> dict:
         return {
             "id": str(ong["_id"]),
             "cnpj": ong["cnpj"],

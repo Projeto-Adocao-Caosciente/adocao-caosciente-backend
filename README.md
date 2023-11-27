@@ -20,11 +20,24 @@ Crie um arquivo chamado `.env` na pasta raiz do projeto, dentro dele coloque as 
 ```text
 DATABASE_URL=
 DATABASE_NAME=
+
+ENVIRONMENT=development
+
+DATABASE_URL_TEST=mongodb://localhost:27017/
+DATABASE_NAME_TEST=adocaosciente_test_db
 ```
 
 estas, devem ser substituidas pelos valores de conexão com o banco de dados **mongodb**.
 
-Caso esteja usando docker substitua pelo nome definido em seu **docker-compose.yml*
+## Execução dos testes
+
+Para executar os testes, antes de tudo, é necessário ter o banco de dados mongodb rodando na porta padrão (27017).
+
+para isso execute o comando ```docker-compose up -d``` na raiz do projeto.
+
+após isso, verifique se a variavel de ambiente `ENVIRONMENT` está com o valor `test` no arquivo `.env`. Caso não esteja, altere o valor para `test`.
+
+por fim, execute o comando ```python -m pytest ``` na raiz do projeto.
 
 ## Execução do projeto
 

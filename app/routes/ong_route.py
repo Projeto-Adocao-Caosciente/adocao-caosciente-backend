@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
@@ -14,16 +14,21 @@ jwt_bearer = JWTBearer()
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     ong = ong_service.get_ong_by_id(ong_id)
+    if ong:
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Ong retrieved successfully.", "data": { "ong": ong }}
+        )
     return JSONResponse(
-        status_code=200,
-        content={"message": "Ong retrieved successfully.", "data": { "ong": ong }}
+        status_code=404,
+        content="ONG not found"
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong_animals():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     animals = ong_service.get_ong_animals(ong_id)
     if len(animals) == 0:
         return JSONResponse(
@@ -36,32 +41,27 @@ async def read_ong_animals():
     )
 
 @router.post("/", status_code=201)
-async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
-    result = ong_service.create_ong(ong)
-    if result:
-        return JSONResponse(
-            status_code=201,
-            content={"message": "Ong created successfully."}
-        )
+async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
+    response = ong_service.create_ong(ong)
     return JSONResponse(
-        status_code=500,
-        content={"message": "Failed to create ong."}
+        status_code=response.status,
+        content=response.dict()
     )
 
 
-@router.put("/", dependencies=[Depends(jwt_bearer)],  status_code=200)
-async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.schema_extra)):
-    ong_id = jwt_bearer.get_ong_user_id()
-    ong_service.update_ong(ong, ong_id)
+@router.patch("/", dependencies=[Depends(jwt_bearer)])
+async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
+    ong_id = jwt_bearer.get_user_id()
+    response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
-        status_code=200,
-        content={"message": "Ong updated successfully."}
+        status_code=response.status,
+        content=response.dict()
     )
 
 
 @router.delete(path="/", dependencies=[Depends(jwt_bearer)],  status_code=200)
 async def delete_ong():
-    ong_id = jwt_bearer.get_ong_user_id()
+    ong_id = jwt_bearer.get_user_id()
     result = ong_service.delete_ong(ong_id)
     if result:
         return JSONResponse(
