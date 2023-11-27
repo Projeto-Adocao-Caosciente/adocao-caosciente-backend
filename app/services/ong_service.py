@@ -21,7 +21,7 @@ class OngService:
                 current_time = datetime.now().isoformat()
                 ong.created_at = current_time
                 ong.updated_at = current_time
-                result = self.ongs_collection.insert_one(ong.dict())
+                result = self.ongs_collection.insert_one(ong.model_dump())
                 if result:
                     return ResponseDTO({"id": str(result.inserted_id)}, "Ong created successfully", http.HTTPStatus.CREATED)
                 else:
@@ -37,7 +37,7 @@ class OngService:
 
                 if not old_ong:
                     return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
-                update_fields = { field : value for field, value in ong.dict().items() if value != old_ong[field] and value is not None }
+                update_fields = { field : value for field, value in ong.model_dump().items() if value != old_ong[field] and value is not None }
                 if len(update_fields) == 0:
                     return ResponseDTO(None, "Ong not modified", http.HTTPStatus.OK)
                 
