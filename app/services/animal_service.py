@@ -6,6 +6,8 @@ from app.domain.models.animal import AnimalModel
 from app.domain.database.db import Database
 from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from bson import ObjectId
+from app.domain.models.dto.response import ResponseDTO
+
 
 from app.services.ong_service import OngService
 
@@ -75,7 +77,11 @@ class AnimalService:
                     {"_id": ObjectId(animal_id)},
                     {"$push": {"forms": form_id}}
                 )
-                return True if result else False
+                if result:
+                    return ResponseDTO(http.HTTPStatus.OK, "Form inserted", result)
+                else:
+                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Could not insert form", None)
         except Exception as e:
-            print(f"Error updating ong animals: {e}")
-            return False
+            msg = f"Error updating ong animals: {e}"
+            print(msg)
+            return ResponseDTO(http.HTTPStatus.BAD_REQUEST, msg, None)
