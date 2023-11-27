@@ -19,11 +19,10 @@ jwt_bearer = JWTBearer()
 @router.post("/{animal_id}", dependencies=[Depends(jwt_bearer)], status_code=201)
 async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.Config.schema_extra)):
     ong_id = jwt_bearer.get_ong_user_id()
-    result = form_service.create_form(ong_id, animal_id, form)
-    print(result.message)
+    response = form_service.create_form(ong_id, animal_id, form)
     return JSONResponse(
-        status_code = result.status,
-        content={"message": result.message, "data": result.data}
+        status_code = response.status,
+        content=response.dict()
     )
 
 # TODO: ler Form via ID, verificando se a ong tem permissão
