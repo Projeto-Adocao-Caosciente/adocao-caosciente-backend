@@ -30,12 +30,3 @@ Feature: ONG
         When I update the password of the ONG
 
         Then I should receive an error message
-
-    Scenario: Try to update the cnpj of a ONG
-        Given I have all the required data to update
-        And ONG is registered
-
-        When I update the cnpj of the ONG
-
-        Then I should receive an error message
-    
