@@ -1,7 +1,7 @@
 import json
 import os
 from fastapi import FastAPI, Response
-from app.routes import ong_route, animal_route, login_route, adopter_route
+from app.routes import ong_route, animal_route, login_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 
@@ -43,6 +43,7 @@ api.add_middleware(
 api.include_router(ong_route.router)
 api.include_router(animal_route.router)
 api.include_router(login_route.router)
+api.include_router(form_route.router)
 api.include_router(adopter_route.router)
 
 # TODO: Todas as services devem retornar um DTO padrão com mensagem de erro, status e dado. dessa forma 

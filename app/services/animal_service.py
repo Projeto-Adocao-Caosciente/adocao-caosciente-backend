@@ -8,6 +8,7 @@ from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from bson import ObjectId
 from app.domain.models.dto.response import ResponseDTO
 
+
 from app.services.ong_service import OngService
 
 class AnimalService:
@@ -106,4 +107,21 @@ class AnimalService:
             return ResponseDTO(AnimalModel.animal_helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
         except Exception as e:
             print(f"Error getting animal: {e}")
-            return ResponseDTO(None, "Error on get animal", http.HTTPStatus.BAD_REQUEST)
+            return None
+    
+    def insert_form(self, animal_id: str, form_id: str) -> ResponseDTO:
+        try:
+            with self.db.session.start_transaction():
+                result = self.animals_collection.update_one(
+                    {"_id": ObjectId(animal_id)},
+                    {"$push": {"forms": form_id}}
+                )
+                if result:
+                    return ResponseDTO(result, "Form inserted", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Could not insert form", http.HTTPStatus.BAD_REQUEST)
+        except Exception as e:
+            msg = f"Error updating ong animals: {e}"
+            print(msg)
+            return ResponseDTO(None, msg, http.HTTPStatus.BAD_REQUEST)
+
