@@ -13,7 +13,7 @@ class FormService:
         self.animal_service = animal_service
         self.form_collection = self.db.get_database().get_collection("forms")
         
-    def create_form(self, ong_id:str, animal_id:str, form: FormModel):
+    def create_form(self, ong_id:str, animal_id:str, form: FormModel) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
                 animals = self.ong_service.get_ong_animals(ong_id)
@@ -25,20 +25,20 @@ class FormService:
                 if not has_animal:
                     return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
                 form.animal_id = animal_id
-                result = self.form_collection.insert_one(form.dict())
+                result = self.form_collection.insert_one(form.model_dump())
                 if result:
                     response = self.animal_service.insert_form(animal_id, result.inserted_id)
                     if response.status != http.HTTPStatus.OK :
                         return response
                     new_form = self.form_collection.find_one(result.inserted_id)
-                    return ResponseDTO(http.HTTPStatus.CREATED,"Form created successfully", FormModel.form_helper(new_form))
+                    return ResponseDTO(FormModel.form_helper(new_form),"Form created successfully", http.HTTPStatus.CREATED)
                 else:
-                    return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Couldn't Create Form. Aborting.", None)
+                    return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating Forms: {e}")
-            return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Error Creating Form: " + str(e), None)
+            return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
-    def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str):
+    def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str) -> ResponseDTO:
         try:
             animals = self.ong_service.get_ong_animals(ong_id)
             has_animal = False
@@ -50,38 +50,38 @@ class FormService:
                     animal_object = animal
                     break
             if not has_animal:
-                return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "Animal doesn't belongs to ONG. Aborting.", None)
+                return ResponseDTO(None, "Animal doesn't belongs to ONG.", http.HTTPStatus.BAD_REQUEST)
             
             for f in animal_object.get("forms"):
                 if f == form_id:
                     has_form = True
             
             if not has_form:
-                return ResponseDTO(http.HTTPStatus.BAD_REQUEST, "This form doesn't belong to this animal", None)
+                return ResponseDTO(None, "This form doesn't belong to this animal", http.HTTPStatus.BAD_REQUEST)
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
-                return ResponseDTO(200,"Form gotten successfully", FormModel.form_helper(result))
-            return ResponseDTO(400, "Couldn't find Form. Aborting.", None)
+                return ResponseDTO(FormModel.form_helper(result),"Form gotten successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Couldn't find Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             message = f"Error getting Form: {e}"
             print(message)
-            return ResponseDTO(400, message, None)
+            return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)
         
         
     def get_questions(self, ong_id: str,  animal_id:str, form_id: str, answers: bool = False) -> ResponseDTO:
-        result = self.get_form_by_id(ong_id, animal_id, form_id)
-        if result.status != 200:
-            return result
-        questions = result.data.get("questions")
+        response = self.get_form_by_id(ong_id, animal_id, form_id)
+        if response.status != http.HTTPStatus.OK:
+            return response
+        questions = response.data.get("questions")
         for q in questions:
             new_choice = []
             for c in q.get('choices'):
                 new_choice.append(c[0])
             q['choices'] = new_choice
             print(q)
-        del result.data['animal_id']
-        del result.data['answer_sheets']
-        return result
+        del response.data['animal_id']
+        del response.data['answer_sheets']
+        return response
     
     
     def get_answer_sheets(self, formID) -> ResponseDTO:

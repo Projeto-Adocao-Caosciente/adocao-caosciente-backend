@@ -13,8 +13,6 @@ router = APIRouter(
     tags=['animals_data']
 )
 
-# TODO: Fazer injeção de dependencia da forma correta (não sei como kkkk)
-
 ong_service = OngService()
 animal_service = AnimalService(ong_service)
 jwt_bearer = JWTBearer()

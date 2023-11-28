@@ -32,15 +32,15 @@ class AdopterService:
             print(f"Erro creating adopter: {e}")
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
 
-    def get_adopter_by_id(self, adopter_id: str):
+    def get_adopter_by_id(self, adopter_id: str) -> ResponseDTO:
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
-                return AdopterModel.helper(result)
-            return None
+                return ResponseDTO(AdopterModel.adopter_helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             print(f"Error getting adopter: {e}")
-            return None
+            return ResponseDTO(None, "Error getting adopter", http.HTTPStatus.BAD_REQUEST)
         
     def get_adopter_by_cpf(self, cpf: str):
         try:
@@ -52,8 +52,12 @@ class AdopterService:
             print(f"Error getting adopter by cpf: {e}")
             return None
         
-    def get_adopter_animals(self, adopter_id: str) -> list:
+    def get_adopter_animals(self, adopter_id: str) -> ResponseDTO:
         try:
+            response = self.get_adopter_by_id(adopter_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+            
             result = list(self.adopter_collection.aggregate([
                 {
                     "$match": {"_id": ObjectId(adopter_id)}
@@ -76,9 +80,9 @@ class AdopterService:
                 }
             ]))
             if result:
-                animals = result[0]["animals"]
-                return [AnimalModel.animal_helper(animal) for animal in animals]
-            return []
+                animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
+                return ResponseDTO(animals, "Adopter animals retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO([], "Adopter has no animals", http.HTTPStatus.OK)
         except Exception as e:
-            print(f"Error getting ong animals: {e}")
-            return []
+            print(f"Error getting adopter animals: {e}")
+            return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)

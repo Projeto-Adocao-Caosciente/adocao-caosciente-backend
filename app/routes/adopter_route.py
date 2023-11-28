@@ -27,28 +27,18 @@ async def create_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_adopter():
     adopter_id = jwt_bearer.get_user_id()
-    adopter = adopter_service.get_adopter_by_id(adopter_id)
-    if adopter:
-        return JSONResponse(
-            status_code=200,
-            content={"message": "Adopter retrieved seccessully.", "data": {"adopter": adopter}}
-        )
+    response = adopter_service.get_adopter_by_id(adopter_id)
     return JSONResponse(
-        status_code=404,
-        content={"message": "Adopter not found.", "data": None}
+        status_code=response.status,
+        content=response.dict()
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_adopter_animals():
     adopter_id = jwt_bearer.get_adopter_user_id()
-    animals = adopter_service.get_adopter_animals(adopter_id)
-    if len(animals) == 0:
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Adopter has no animals.", "data": { "animals": animals }}
-        )
+    response = adopter_service.get_adopter_animals(adopter_id)
     return JSONResponse(
-        status_code=200,
-        content={"message": "Adopter animals retrieved successfully.", "data": { "animals": animals }}
+        status_code=response.status,
+        content=response.dict()
     )
 

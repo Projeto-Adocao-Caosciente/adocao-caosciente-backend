@@ -1,9 +1,10 @@
-from pydantic import BaseModel, Field
+from typing import List
+from pydantic import BaseModel
 class FormModel(BaseModel):
-    title: str = ""
-    animal_id: str = ""
-    questions: list = []
-    answer_sheets: list[str] = []
+    title: str = None
+    animal_id: str = None
+    questions: List[dict] = []
+    answer_sheets: List[str] = []
     
     class Config:
         schema_extra = {
