@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from app.utils.utils import Utils
 
 class OngModel(BaseModel):
     cnpj: str = Field(None, min_length=14, max_length=14)
@@ -18,7 +17,7 @@ class OngModel(BaseModel):
     created_at: str = Field(None, )
     updated_at: str = datetime.now().isoformat()
     password: str = Field(None, min_length=4, max_length=60)
-
+    
     def required_field_at_create(self) -> set:
         return {"cnpj", "name", "logo", "city", "state", "phone", "email", "mission", "foundation", "description", "password"}
 
@@ -44,7 +43,7 @@ class OngModel(BaseModel):
             'logo': self.logo,
             'city': self.city,
             'state': self.state,
-            'phone': Utils.convert_to_digit(self.phone),
+            'phone': self.phone,
             'email': self.email,
             'mission': self.mission,
             'foundation': self.foundation,
@@ -72,3 +71,11 @@ class OngModel(BaseModel):
             "created_at": ong["created_at"],
             "updated_at": ong["updated_at"],
         }
+        
+    def remove_mask_cnpj(self):
+        cnpj_normalized = self.model_dump()["cnpj"].replace(".", "").replace("/", "").replace("-", "")
+        self.cnpj = cnpj_normalized
+        
+    def remove_mask_phone(self):
+        phone_normalized = self.model_dump()["phone"].replace("(", "").replace(")", "").replace(" ", "").replace(".", "").replace("/", "").replace("-", "")
+        self.phone = phone_normalized

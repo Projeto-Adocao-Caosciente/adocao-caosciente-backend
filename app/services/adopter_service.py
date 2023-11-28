@@ -14,16 +14,23 @@ class AdopterService:
         self.db = Database()
         self.adopter_collection = self.db.get_database().get_collection("Adopter")
 
-    def create_adopter(self, adopter: AdopterModel) -> bool:
-        print(adopter)
+    def create_adopter(self, adopter: AdopterModel) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                adopter.created_at = datetime.now()
+                # FIXME: Encriptar senha de alguma forma, aqui dá erro -> 'OngModel' object has no attribute 'password'
+                # salt = bcrypt.gensalt()  # definir rounds torna a operação mais lenta
+                # ong.password = bcrypt.hashpw(
+                current_time = datetime.now().isoformat()
+                adopter.created_at = current_time
+                adopter.updated_at = current_time
                 result = self.adopter_collection.insert_one(adopter.model_dump())
-                return True if result else False
+                if result:
+                    return ResponseDTO({"id": str(result.inserted_id)}, "Adopter created successfully", http.HTTPStatus.CREATED)
+                else:
+                    return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Erro creating adopter: {e}")
-            return False
+            return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
 
     def get_adopter_by_id(self, adopter_id: str):
         try:

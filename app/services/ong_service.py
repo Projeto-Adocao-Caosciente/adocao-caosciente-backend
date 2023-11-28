@@ -48,11 +48,11 @@ class OngService:
                 if "email" in update_fields:
                     ong = self.ongs_collection.find_one({"email": update_fields["email"]})
                     if ong:
-                        return ResponseDTO(None, "Email already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
+                        return ResponseDTO(None, "Email already in use", http.HTTPStatus.BAD_REQUEST)
                 if "cnpj" in update_fields:
                     ong = self.ongs_collection.find_one({"cnpj": update_fields["cnpj"]})
                     if ong:
-                        return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
+                        return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.BAD_REQUEST)
                 
                 update_fields["updated_at"] = datetime.now().isoformat()
                 result = self.ongs_collection.update_one(

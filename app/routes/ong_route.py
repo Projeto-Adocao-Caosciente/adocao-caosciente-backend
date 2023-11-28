@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
 from app.services.ong_service import OngService
+from fastapi.responses import JSONResponse
 
 router = APIRouter(
     prefix="/ong",
@@ -31,7 +32,12 @@ async def read_ong_animals():
     )
 
 @router.post("/", status_code=201)
-async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
+async def create_ong(
+    ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)
+):
+    ong.remove_mask_cnpj()
+    ong.remove_mask_phone()
+   
     response = ong_service.create_ong(ong)
     return JSONResponse(
         status_code=response.status,
@@ -40,10 +46,16 @@ async def create_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sche
 
 
 @router.patch("/", dependencies=[Depends(jwt_bearer)])
-async def update_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
+async def update_ong(
+    ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)
+):
+    ong.remove_mask_cnpj()
+    ong.remove_mask_phone()
+    
     ong_id = jwt_bearer.get_user_id()
     response = ong_service.update_ong(ong, ong_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()
     )
+    

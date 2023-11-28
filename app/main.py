@@ -1,9 +1,13 @@
+import http
 import json
-import os
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from app.routes import ong_route, animal_route, login_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
+
+from app.domain.models.dto.response import ResponseDTO
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 api = FastAPI(
     title="Adoção Cãosciente",
@@ -46,12 +50,8 @@ api.include_router(login_route.router)
 api.include_router(form_route.router)
 api.include_router(adopter_route.router)
 
-# TODO: Todas as services devem retornar um DTO padrão com mensagem de erro, status e dado. dessa forma 
-# a rota se preocupa apenas em retornar o DTO e não precisa se preocupar com o status code
-
 @api.on_event("startup")
 async def setup():
-
     env = settings.ENVIRONMENT
     if env == "test":
         raise Exception("You are running tests. Database will not be created.")
@@ -61,8 +61,18 @@ async def startup_event():
     with open("docs/swagger_dump.json", "w") as fp:
         fp.write(json.dumps(api.openapi()))
 
-# @api.middleware("http")
-# async def pass_options_request(request, call_next):
-#     if request.method == "OPTIONS" and request.headers.get("Origin"):
-#         return Response(status_code=204)
-#     return await call_next(request)
+
+@api.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    custom_error = [f"{error['loc'][1]}: {error['msg']}" for error in exc.errors()]
+    return JSONResponse(
+        status_code=http.HTTPStatus.UNPROCESSABLE_ENTITY,
+        content=ResponseDTO(custom_error, "Validation Fields Errors", http.HTTPStatus.UNPROCESSABLE_ENTITY).dict()
+    )
+
+@api.exception_handler(Exception)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
+        content=ResponseDTO(None, repr(exc), http.HTTPStatus.INTERNAL_SERVER_ERROR).dict()
+    )

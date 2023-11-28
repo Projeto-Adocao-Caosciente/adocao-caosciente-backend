@@ -78,3 +78,15 @@ class AdopterModel(BaseModel):
             "created_at": adopter["created_at"],
             "updated_at": adopter["updated_at"],
         }
+        
+    def remove_mask_cpf(self):
+        cpf_normalized = self.model_dump()["cpf"].replace(".", "").replace("-", "")
+        self.cpf = cpf_normalized
+        
+    def remove_mask_cep(self):
+        cep_normalized = self.model_dump()["cep"].replace(".", "").replace("-", "")
+        self.cep = cep_normalized
+        
+    def remove_mask_phone(self):
+        phone_normalized = self.model_dump()["phone"].replace("(", "").replace(")", "").replace(" ", "").replace(".", "").replace("/", "").replace("-", "")
+        self.phone = phone_normalized

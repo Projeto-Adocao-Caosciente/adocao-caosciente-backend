@@ -12,6 +12,18 @@ router = APIRouter(
 adopter_service = AdopterService()
 jwt_bearer = JWTBearer()
 
+@router.post("/", status_code=201)
+async def create_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
+    adopter.remove_mask_cpf()
+    adopter.remove_mask_cep()
+    adopter.remove_mask_phone()
+    
+    response = adopter_service.create_adopter(adopter)
+    return JSONResponse(
+        status_code=response.status,
+        content=response.dict()
+    )
+
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_adopter():
     adopter_id = jwt_bearer.get_user_id()
@@ -23,7 +35,7 @@ async def read_adopter():
         )
     return JSONResponse(
         status_code=404,
-        content="Adopter not found"
+        content={"message": "Adopter not found.", "data": None}
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
@@ -40,15 +52,3 @@ async def read_adopter_animals():
         content={"message": "Adopter animals retrieved successfully.", "data": { "animals": animals }}
     )
 
-@router.post("/", status_code=201)
-async def create_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
-    result = adopter_service.create_adopter(adopter)
-    if result:
-        return JSONResponse(
-            status_code=200,
-            content={"message": "Adopte created successfully."}
-        )
-    return JSONResponse(
-        status_code=500,
-        content={"message": "Failed to create adopter."}
-    )
