@@ -17,34 +17,57 @@ class AnimalService:
         self.ong_service = ong_service
         self.animals_collection = self.db.get_database().get_collection("animals")
 
-    def create_animal(self, animal: AnimalModel, ong_id: str) -> bool:
+    def create_animal(self, animal: AnimalModel, ong_id: str) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                animal.created_at = datetime.now()
-                result = self.animals_collection.insert_one(animal.dict())
-                if result == False:
-                    raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Error creating animal.")
-                ong = self.ong_service.get_ong_by_id(ong_id)
-                if ong is None:
-                    raise fastapi.HTTPException(status_code=http.HTTPStatus.BAD_REQUEST, detail="Ong not found.")
-                result = self.ong_service.update_ong_animals(ong["id"], result.inserted_id)
-                return True if result else False
+                current_time = datetime.now().isoformat()
+                animal.created_at = current_time
+                animal.updated_at = current_time
+
+                response = self.ong_service.get_ong_by_id(ong_id)
+                if response.status != http.HTTPStatus.OK:
+                    return response
+                
+                ong_id = response.data["id"]
+
+                result = self.animals_collection.insert_one(animal.model_dump())
+                if not result:
+                    return ResponseDTO(None, "Error on create animal", http.HTTPStatus.BAD_REQUEST)
+                
+                response = self.ong_service.update_ong_animals(ong_id, result.inserted_id)
+                if response.status != http.HTTPStatus.OK:
+                    return response
+                
+                return ResponseDTO({"id": str(result.inserted_id)}, "Animal created successfully", http.HTTPStatus.CREATED)
         except Exception as e:
             print(f"Error creating animal: {e}")
-            return False
+            return ResponseDTO(None, "Error on create animal", http.HTTPStatus.BAD_REQUEST)
 
-    def update_animal(self, animal: AnimalModel, animal_id: str) -> bool:
+    def update_animal(self, animal: AnimalModel, animal_id: str, ong_id: str) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                # TODO: O update n funciona muito bem ainda, ajustar isso
+                response = self.get_animal(animal_id, ong_id)
+                if response.status != http.HTTPStatus.OK:
+                    return response
+                
+                old_animal = response.data
+
+                update_fields = { field : value for field, value in animal.model_dump().items() if value != old_animal[field] and value is not None }
+                if len(update_fields) == 0:
+                    return ResponseDTO(None, "Animal not modified", http.HTTPStatus.OK)
+
+                animal.updated_at = datetime.now().isoformat()
                 result = self.animals_collection.update_one(
                     {"_id": ObjectId(animal_id)},
-                    {"$set": animal.dict()}
+                    {"$set": update_fields}
                 )
-                return True if result else False
+                if result:
+                    return ResponseDTO(None, "Animal updated successfully", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Error on update animal", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error updating animal: {e}")
-            return False
+            return ResponseDTO(None, "Error on update animal", http.HTTPStatus.BAD_REQUEST)
 
     def delete_animal(self, animal_id: str) -> bool:
         try:
@@ -56,16 +79,32 @@ class AnimalService:
             print(f"Error deleting animal: {e}")
             return False
 
-    def get_animal(self, animal_id: str, ong_id: str):
+    def get_animal(self, animal_id: str, ong_id: str) -> ResponseDTO:
         try:
-            ong = self.ong_service.get_ong_by_id(ong_id)
-            # TODO: Se a ong não existir mais, não retornar o animal, isso ta certo?
-            if ong is None:
-                return None
+            response = self.ong_service.get_ong_by_id(ong_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+            
+            result = self.animals_collection.find_one({"_id": ObjectId(animal_id)})
 
-            result = self.animals_collection.find_one(
-                {"_id": ObjectId(animal_id), "ong": ong["cnpj"]})
-            return AnimalModel.animal_helper(result)
+            if not result:
+                return ResponseDTO(None, "Animal not found", http.HTTPStatus.NOT_FOUND)
+
+            response = self.ong_service.get_ong_animals(ong_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+            
+            # TODO: Melhorar isso usando dicionario ao inves de lista de animais
+            ong_animals = response.data
+            animal_exists = False
+            for animal in ong_animals:
+                if animal["id"] == animal_id:
+                    animal_exists = True
+                    break
+            if not animal_exists:
+                return ResponseDTO(None, "Animals doesn't belong to ong", http.HTTPStatus.UNAUTHORIZED)                
+            
+            return ResponseDTO(AnimalModel.animal_helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
         except Exception as e:
             print(f"Error getting animal: {e}")
             return None
@@ -85,3 +124,4 @@ class AnimalService:
             msg = f"Error updating ong animals: {e}"
             print(msg)
             return ResponseDTO(None, msg, http.HTTPStatus.BAD_REQUEST)
+

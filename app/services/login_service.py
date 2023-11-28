@@ -1,4 +1,5 @@
 import http
+from typing import Union
 from app.services.ong_service import OngService
 from app.services.adopter_service import AdopterService
 from fastapi import HTTPException
@@ -39,17 +40,17 @@ class LoginService:
 
         return model.helper(entitie)
 
-    def register(self, model: OngModel | AdopterModel) -> ResponseDTO:
-        if "cnpj" in model.dict():
-            if len(model.dict().get("cnpj")) != 14:
+    def register(self, model: Union[OngModel, AdopterModel]) -> ResponseDTO:
+        if "cnpj" in model.model_dump():
+            if len(model.model_dump().get("cnpj")) != 14:
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid CNPJ"
                 )
             response = self.ong_service.create_ong(model)
 
-        elif "cpf" in model.dict():
-            if len(model.dict().get("cpf")) != 11:
+        elif "cpf" in model.model_dump():
+            if len(model.model_dump().get("cpf")) != 11:
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid CPF"
@@ -66,3 +67,19 @@ class LoginService:
             return ResponseDTO(None, "Failed to register user", http.HTTPStatus.BAD_REQUEST)
         else:
             return ResponseDTO(None, "User registered successfully", http.HTTPStatus.CREATED)
+
+    def get_user(self, id: str, roles: dict) -> ResponseDTO:
+        if "ong" in roles:
+            response = self.ong_service.get_ong_by_id(id)
+            if response.status == http.HTTPStatus.OK:
+                return ResponseDTO({"type": 1, "user": response.data}, "User retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Wrong ong id", http.HTTPStatus.BAD_REQUEST)
+        elif "user" in roles:
+            response = self.adopter_service.get_adopter_by_id(id)
+            if response.status == http.HTTPStatus.OK:
+                return ResponseDTO({"type": 2, "user": response.data}, "User retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Wrong user id", http.HTTPStatus.BAD_REQUEST)
+        else:
+            return ResponseDTO(None, "Invalid user", http.HTTPStatus.BAD_REQUEST)
+        
+        return ResponseDTO(None, "Failed to get user", http.HTTPStatus.BAD_REQUEST)

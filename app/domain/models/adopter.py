@@ -1,26 +1,24 @@
 from datetime import datetime
 from typing import List
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
 
 class AdopterModel(BaseModel):
-    cpf: str = None
-    name: str = None
-    phone: str = None
-    state: str = None
-    city: str = None
-    address: str = None
-    number: str = None
-    cep: str = None
-    birthdate: str = None
-    gender: str = None
-    email: str = None
-    photo: str = None
-    animals: List[str] =  []
-    responses: List[str] = []
-    created_at: str = None
+    cpf: str = Field(None, min_length=11, max_length=11)
+    name: str = Field(None, min_length=2, max_length=60)
+    phone: str = Field(None, min_length=10, max_length=12)
+    city: str = Field(None, min_length=2, max_length=60)
+    state: str = Field(None, min_length=2, max_length=60)
+    address: str = Field(None, min_length=2, max_length=60)
+    cep: str = Field(None, min_length=8, max_length=8)
+    birthdate: str = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    gender: str = Field(None, min_length=2, max_length=60)
+    email: str = Field(None, max_length=60)
+    photo: str = Field(None, )
+    animals: List[str] = Field([], )
+    responses: List[str] = Field([], )
+    created_at: str = Field(None, )
     updated_at: str = datetime.now().isoformat()
-    password: str = None
+    password: str = Field(None, min_length=4, max_length=60)
 
     class Config:
         json_schema_extra = {

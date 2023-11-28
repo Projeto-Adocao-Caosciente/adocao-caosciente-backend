@@ -1,7 +1,9 @@
 import json
+import os
 from fastapi import FastAPI, Response
 from app.routes import ong_route, animal_route, login_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
+from app.config.settings import settings
 
 api = FastAPI(
     title="Adoção Cãosciente",
@@ -46,6 +48,13 @@ api.include_router(adopter_route.router)
 
 # TODO: Todas as services devem retornar um DTO padrão com mensagem de erro, status e dado. dessa forma 
 # a rota se preocupa apenas em retornar o DTO e não precisa se preocupar com o status code
+
+@api.on_event("startup")
+async def setup():
+
+    env = settings.ENVIRONMENT
+    if env == "test":
+        raise Exception("You are running tests. Database will not be created.")
 
 @api.on_event("startup")
 async def startup_event():

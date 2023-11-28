@@ -21,14 +21,14 @@ class OngService:
                 current_time = datetime.now().isoformat()
                 ong.created_at = current_time
                 ong.updated_at = current_time
-                result = self.ongs_collection.insert_one(ong.dict())
+                result = self.ongs_collection.insert_one(ong.model_dump())
                 if result:
                     return ResponseDTO({"id": str(result.inserted_id)}, "Ong created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating ong: {e}")
-            return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
 
     def update_ong(self, ong: OngModel, ong_id: str) -> ResponseDTO:
         try:
@@ -37,15 +37,12 @@ class OngService:
 
                 if not old_ong:
                     return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
-                update_fields = { field : value for field, value in ong.dict().items() if value != old_ong[field] and value is not None }
+                update_fields = { field : value for field, value in ong.model_dump().items() if value != old_ong[field] and value is not None }
                 if len(update_fields) == 0:
                     return ResponseDTO(None, "Ong not modified", http.HTTPStatus.OK)
                 
                 if "password" in update_fields:
                     return ResponseDTO(None, "Password cannot be updated", http.HTTPStatus.BAD_REQUEST)
-                
-                if "cnpj" in update_fields:
-                    return ResponseDTO(None, "CNPJ cannot be updated", http.HTTPStatus.BAD_REQUEST)
 
                 # Check if email or cnpj is already in use
                 if "email" in update_fields:
@@ -56,22 +53,19 @@ class OngService:
                     ong = self.ongs_collection.find_one({"cnpj": update_fields["cnpj"]})
                     if ong:
                         return ResponseDTO(None, "CNPJ already in use", http.HTTPStatus.UNPROCESSABLE_ENTITY)
-
-                try:
-                    result = self.ongs_collection.update_one(
-                        {"_id": ObjectId(ong_id)},
-                        {"$set": update_fields}
-                    )
-                    if result:
-                        return ResponseDTO(None, "Ong updated successfully", http.HTTPStatus.OK)
-                    else:
-                        return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
-                except Exception as err:
-                    print(err)
-                    return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
+                
+                update_fields["updated_at"] = datetime.now().isoformat()
+                result = self.ongs_collection.update_one(
+                    {"_id": ObjectId(ong_id)},
+                    {"$set": update_fields}
+                )
+                if result:
+                    return ResponseDTO(None, "Ong updated successfully", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error updating ong: {e}")
-            return ResponseDTO(None, "Error on update", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
 
     def delete_ong(self, ong_id: str) -> bool:
         try:
@@ -94,15 +88,15 @@ class OngService:
             print(f"Error deleting ong: {e}")
             return False
 
-    def get_ong_by_id(self, ong_id: str):
+    def get_ong_by_id(self, ong_id: str) -> ResponseDTO:
         try:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
-                return OngModel.helper(result)
-            return None
+                return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             print(f"Error getting ong: {e}")
-            return None
+            return ResponseDTO(None, "Error on get ong by id", http.HTTPStatus.BAD_REQUEST)
 
     def get_ong_by_cnpj(self, cnpj: str):
         try:
@@ -114,8 +108,12 @@ class OngService:
             print(f"Error getting ong by cnpj: {e}")
             return None
 
-    def get_ong_animals(self, ong_id: str) -> list:
+    def get_ong_animals(self, ong_id: str) -> ResponseDTO:
         try:
+            response = self.get_ong_by_id(ong_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+        
             result = list(self.ongs_collection.aggregate([
                 {
                     "$match": {"_id": ObjectId(ong_id)}
@@ -138,21 +136,24 @@ class OngService:
                 }
             ]))
             if result:
-                animals = result[0]["animals"]
-                return [AnimalModel.animal_helper(animal) for animal in animals]
-            return []
+                animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
+                return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
         except Exception as e:
             print(f"Error getting ong animals: {e}")
-            return []
+            return ResponseDTO(None, "Error on get ong animals", http.HTTPStatus.BAD_REQUEST)
     
-    def update_ong_animals(self, ong_id, animal_id):
+    def update_ong_animals(self, ong_id, animal_id) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
                 result = self.ongs_collection.update_one(
                     {"_id": ObjectId(ong_id)},
                     {"$push": {"animals": animal_id}}
                 )
-                return True if result else False
+                if result:
+                    return ResponseDTO(None, "Ong animals updated successfully", http.HTTPStatus.OK)
+                else:
+                    return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error updating ong animals: {e}")
-            return False
+            return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)

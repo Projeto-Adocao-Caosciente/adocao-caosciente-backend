@@ -52,12 +52,25 @@ class JWTBearer(HTTPBearer):
         payload = self.decode_jwt(token)
         return payload["user_id"]
 
+    def get_user_roles(self) -> dict:
+        token = self.credentials
+        payload = self.decode_jwt(token)
+        return payload["user_roles"]
+
+    def refresh_jwt(self) -> str:
+        token = self.credentials
+        payload = self.decode_jwt(token)
+        payload["expires"] = time.time() + 3600
+        token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+        return token
+
     @staticmethod
-    def sign_jwt(user_id: str) -> str:
+    def sign_jwt(user_id: str, role: str) -> str:
         payload = {
             "user_id": user_id,
             "user_roles": {
-                "ONG": True,
+                role: True
             },
             "expires": time.time() + 3600
         }
