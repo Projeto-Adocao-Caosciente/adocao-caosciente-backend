@@ -2,16 +2,18 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+from utils.mask import Mask
+
 class OngModel(BaseModel):
-    cnpj: str = Field(None, min_length=14, max_length=14)
+    cnpj: str = Field(None, pattern=Mask.CNPJ)
     name: str = Field(None, min_length=2, max_length=60)
     logo: str = Field(None, )
     city: str = Field(None, min_length=2, max_length=60)
     state: str = Field(None, min_length=2, max_length=60)
-    phone: str = Field(None, min_length=10, max_length=12)
+    phone: str = Field(None, pattern=Mask.PHONE)
     email: str = Field(None, max_length=60)
     mission: str = Field(None, max_length=500)
-    foundation: str = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    foundation: str = Field(None, pattern=Mask.DATE)
     description: Optional[str] = Field(None, max_length=500) 
     animals: List[str] = Field([], )
     created_at: str = Field(None, )

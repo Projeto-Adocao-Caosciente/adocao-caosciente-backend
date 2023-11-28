@@ -1,6 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 import http
+from pymongo.errors import DuplicateKeyError
 
 from app.domain.database.db import Database
 from app.domain.models.adopter import AdopterModel
@@ -28,6 +29,9 @@ class AdopterService:
                     return ResponseDTO({"id": str(result.inserted_id)}, "Adopter created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
+        except DuplicateKeyError as e:
+            print(f"Error creating adopter: {e}")
+            return ResponseDTO(None, "Email or CPF already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Erro creating adopter: {e}")
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)

@@ -6,6 +6,7 @@ from app.domain.models.ong import OngModel
 from app.domain.database.db import Database
 import http
 from app.domain.models.dto.response import ResponseDTO
+from pymongo.errors import DuplicateKeyError
 
 class OngService:
     def __init__(self):
@@ -25,10 +26,14 @@ class OngService:
                 if result:
                     return ResponseDTO({"id": str(result.inserted_id)}, "Ong created successfully", http.HTTPStatus.CREATED)
                 else:
-                    return ResponseDTO(None, "Error on create", http.HTTPStatus.BAD_REQUEST)
+                    return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
+        except DuplicateKeyError as e:
+            print(f"Error creating ong: {e}")
+            return ResponseDTO(None, "Email or CNPJ already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
+        
 
     def update_ong(self, ong: OngModel, ong_id: str) -> ResponseDTO:
         try:

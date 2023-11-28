@@ -1,6 +1,7 @@
 from ctypes import Union
+import http
 from fastapi import APIRouter, Body, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from app.domain.models.login import LoginModel
 from app.domain.models.ong import OngModel
 from app.domain.models.adopter import AdopterModel
@@ -41,16 +42,8 @@ async def profile():
 
 @router.post("/register_ong")
 async def register_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):
-    response = login_service.register(ong)
-    return JSONResponse(
-        status_code=response.status,
-        content=response.dict()
-    )
+    return RedirectResponse(url='/ong', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)
 
 @router.post("/register_adopter")
 async def register_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
-    response = login_service.register(adopter)
-    return JSONResponse(
-        status_code=response.status,
-        content=response.dict()
-    )
+    response = RedirectResponse(url='/adopter', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)

@@ -1,8 +1,10 @@
 import http
 from typing import Union
+
+from fastapi.responses import RedirectResponse
 from app.services.ong_service import OngService
 from app.services.adopter_service import AdopterService
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from app.domain.models.ong import OngModel
 from app.domain.models.adopter import AdopterModel
 from app.domain.models.dto.response import ResponseDTO
@@ -40,33 +42,35 @@ class LoginService:
 
         return model.helper(entitie)
 
-    def register(self, model: Union[OngModel, AdopterModel]) -> ResponseDTO:
-        if "cnpj" in model.model_dump():
-            if len(model.model_dump().get("cnpj")) != 14:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Invalid CNPJ"
-                )
-            response = self.ong_service.create_ong(model)
+    # TODO: Apagar depois de ter os testes, não é mais necessário
+    # Nova solução Com REDIRECT
+    # def register(self, model: Union[OngModel, AdopterModel]) -> Response :
+    #     if "cnpj" in model.model_dump():
+    #         if len(model.model_dump().get("cnpj")) != 14:
+    #             raise HTTPException(
+    #                 status_code=400,
+    #                 detail="Invalid CNPJ"
+    #             )
+    #         response = self.ong_service.create_ong(model)
 
-        elif "cpf" in model.model_dump():
-            if len(model.model_dump().get("cpf")) != 11:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Invalid CPF"
-                )
-            response = self.adopter_service.create_adopter(model)
+    #     elif "cpf" in model.model_dump():
+    #         if len(model.model_dump().get("cpf")) != 11:
+    #             raise HTTPException(
+    #                 status_code=400,
+    #                 detail="Invalid CPF"
+    #             )
+    #         response = self.adopter_service.create_adopter(model)
 
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail="Failed to register user"
-            )
+    #     else:
+    #         raise HTTPException(
+    #             status_code=400,
+    #             detail="Failed to register user"
+    #         )
 
-        if response.status != http.HTTPStatus.CREATED:
-            return ResponseDTO(None, "Failed to register user", http.HTTPStatus.BAD_REQUEST)
-        else:
-            return ResponseDTO(None, "User registered successfully", http.HTTPStatus.CREATED)
+    #     if response.status != http.HTTPStatus.CREATED:
+    #         return ResponseDTO(None, "Failed to register user", http.HTTPStatus.BAD_REQUEST)
+    #     else:
+    #         return ResponseDTO(None, "User registered successfully", http.HTTPStatus.CREATED)
 
     def get_user(self, id: str, roles: dict) -> ResponseDTO:
         if "ong" in roles:

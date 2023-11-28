@@ -1,5 +1,4 @@
 Feature: ONG
-    As a ONG 
 
     Scenario: Updating a ONG
         Given I have all the required data to update

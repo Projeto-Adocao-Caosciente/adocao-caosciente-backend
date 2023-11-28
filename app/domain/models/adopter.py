@@ -1,16 +1,19 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
+import re
+
+from utils.mask import Mask
 
 class AdopterModel(BaseModel):
-    cpf: str = Field(None, min_length=11, max_length=11)
+    cpf: str = Field(None, pattern=Mask.CPF)
     name: str = Field(None, min_length=2, max_length=60)
-    phone: str = Field(None, min_length=10, max_length=12)
+    phone: str = Field(None, pattern=Mask.PHONE)
     city: str = Field(None, min_length=2, max_length=60)
     state: str = Field(None, min_length=2, max_length=60)
     address: str = Field(None, min_length=2, max_length=60)
-    cep: str = Field(None, min_length=8, max_length=8)
-    birthdate: str = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    cep: str = Field(None, pattern=Mask.CEP)
+    birthdate: str = Field(None, pattern=Mask.DATE)
     gender: str = Field(None, min_length=2, max_length=60)
     email: str = Field(None, max_length=60)
     photo: str = Field(None, )
@@ -79,14 +82,15 @@ class AdopterModel(BaseModel):
             "updated_at": adopter["updated_at"],
         }
         
+
     def remove_mask_cpf(self):
-        cpf_normalized = self.model_dump()["cpf"].replace(".", "").replace("-", "")
-        self.cpf = cpf_normalized
-        
+        self.cpf = self.remove_non_digits(self.model_dump()["cpf"])
+
     def remove_mask_cep(self):
-        cep_normalized = self.model_dump()["cep"].replace(".", "").replace("-", "")
-        self.cep = cep_normalized
-        
+        self.cep = self.remove_non_digits(self.model_dump()["cep"])
+
     def remove_mask_phone(self):
-        phone_normalized = self.model_dump()["phone"].replace("(", "").replace(")", "").replace(" ", "").replace(".", "").replace("/", "").replace("-", "")
-        self.phone = phone_normalized
+        self.phone = self.remove_non_digits(self.model_dump()["phone"])
+    
+    def remove_non_digits(self, value):
+        return re.sub(r'\D', '', value)

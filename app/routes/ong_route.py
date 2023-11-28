@@ -4,6 +4,8 @@ from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
 from app.services.ong_service import OngService
 from fastapi.responses import JSONResponse
+import http
+from app.domain.models.dto.response import ResponseDTO
 
 router = APIRouter(
     prefix="/ong",
@@ -35,9 +37,19 @@ async def read_ong_animals():
 async def create_ong(
     ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)
 ):
+    required_fields = ong.required_field_at_create()
+    received_fields = set([ key for key, value in ong.model_dump().items() if value is not None ])
+    print(required_fields, received_fields)
+    if not required_fields.issubset(received_fields):
+        return JSONResponse(
+            status_code=http.HTTPStatus.BAD_REQUEST,
+            content=ResponseDTO(None, f"Missing required fields: {required_fields - received_fields}",http.HTTPStatus.BAD_REQUEST).dict()
+        )
+
+
     ong.remove_mask_cnpj()
     ong.remove_mask_phone()
-   
+    
     response = ong_service.create_ong(ong)
     return JSONResponse(
         status_code=response.status,
