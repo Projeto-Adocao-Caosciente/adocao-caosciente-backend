@@ -38,6 +38,7 @@ class AdopterService:
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
 
     def get_adopter_by_id(self, adopter_id: str) -> ResponseDTO:
+        print(adopter_id)
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:

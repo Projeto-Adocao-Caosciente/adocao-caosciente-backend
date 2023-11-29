@@ -20,7 +20,14 @@ async def token(
     login: LoginModel,
 ):
     user = login_service.authenticate(login.user, login.password)
-    role = "ong" if user["cnpj"] else "user" if user["cpf"] else ""
+
+    if "cnpj" in user and user["cnpj"]:
+        role = "ong"
+    elif "cpf" in user and user["cpf"]:
+        role = "user"
+    else:
+        role = ""
+        
     token = jwt_bearer.sign_jwt(user["id"], role)
     return {"access_token": token}
 

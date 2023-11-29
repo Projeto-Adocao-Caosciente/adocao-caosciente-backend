@@ -1,5 +1,9 @@
 import http
 import json
+import logging.config
+import random
+import string
+import time
 from fastapi import FastAPI
 from app.routes import ong_route, animal_route, auth_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,14 +54,14 @@ api.include_router(auth_route.router)
 api.include_router(form_route.router)
 api.include_router(adopter_route.router)
 
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+
 @api.on_event("startup")
-async def setup():
+async def startup_event():
     env = settings.ENVIRONMENT
     if env == "test":
         raise Exception("You are running tests. Database will not be created.")
 
-@api.on_event("startup")
-async def startup_event():
     with open("docs/swagger_dump.json", "w") as fp:
         fp.write(json.dumps(api.openapi()))
 
@@ -76,3 +80,19 @@ async def validation_exception_handler(request, exc):
         status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
         content=ResponseDTO(None, repr(exc), http.HTTPStatus.INTERNAL_SERVER_ERROR).dict()
     )
+
+@api.middleware("http")
+async def log_requests(request, call_next):
+    requestId = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    request.state.requestId = requestId
+    logger = logging.LoggerAdapter(logging.getLogger(__name__), {"requestId": requestId})
+    logger.info(f"Request<{requestId}> start request path={request.url.path} method={request.method}")
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time = (time.time() - start_time) * 1000
+    formatted_process_time = "{:.2f}".format(process_time)
+    logger.info(f"id={requestId} completed_in={formatted_process_time}ms status_code={response.status_code}")
+
+    return response

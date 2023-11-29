@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Depends
+import logging
+from fastapi import APIRouter, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
@@ -15,10 +16,13 @@ router = APIRouter(
 ong_service = OngService()
 jwt_bearer = JWTBearer()
 
+logger = logging.getLogger(__name__)
+
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_ong():
+async def read_ong(request: Request):
+    request_id = request.state.requestId
     ong_id = jwt_bearer.get_user_id()
-    response = ong_service.get_ong_by_id(ong_id)
+    response = ong_service.get_ong_by_id(ong_id, request_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()
@@ -39,13 +43,11 @@ async def create_ong(
 ):
     required_fields = ong.required_field_at_create()
     received_fields = set([ key for key, value in ong.model_dump().items() if value is not None ])
-    print(required_fields, received_fields)
     if not required_fields.issubset(received_fields):
         return JSONResponse(
             status_code=http.HTTPStatus.BAD_REQUEST,
             content=ResponseDTO(None, f"Missing required fields: {required_fields - received_fields}",http.HTTPStatus.BAD_REQUEST).dict()
         )
-
 
     ong.remove_mask_cnpj()
     ong.remove_mask_phone()
