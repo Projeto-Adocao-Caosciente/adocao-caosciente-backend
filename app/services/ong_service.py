@@ -28,10 +28,12 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error creating ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
             return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
         
@@ -70,6 +72,7 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error updating ong: {e}")
             return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
 
@@ -91,6 +94,7 @@ class OngService:
                 return False
 
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error deleting ong: {e}")
             return False
 
@@ -101,6 +105,7 @@ class OngService:
                 return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting ong: {e}")
             return ResponseDTO(None, "Error on get ong by id", http.HTTPStatus.BAD_REQUEST)
 
@@ -111,6 +116,7 @@ class OngService:
                 return result
             return None
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting ong by cnpj: {e}")
             return None
 
@@ -146,6 +152,7 @@ class OngService:
                 return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting ong animals: {e}")
             return ResponseDTO(None, "Error on get ong animals", http.HTTPStatus.BAD_REQUEST)
     
@@ -161,5 +168,6 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error updating ong animals: {e}")
             return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)

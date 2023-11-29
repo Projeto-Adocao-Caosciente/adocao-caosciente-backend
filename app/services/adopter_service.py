@@ -8,7 +8,6 @@ from app.domain.models.adopter import AdopterModel
 from app.domain.models.animal import AnimalModel
 from app.domain.models.dto.response import ResponseDTO
 
-# TODO: Refatorar para usar o mesmo padrão de DTOs (ResponseDTO), o mesmo vale pra camada de cima (routes)
 
 class AdopterService:
     def __init__(self):
@@ -30,6 +29,7 @@ class AdopterService:
                 else:
                     return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error creating adopter: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
             return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
@@ -44,6 +44,7 @@ class AdopterService:
                 return ResponseDTO(AdopterModel.adopter_helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting adopter: {e}")
             return ResponseDTO(None, "Error getting adopter", http.HTTPStatus.BAD_REQUEST)
         
@@ -54,6 +55,7 @@ class AdopterService:
                 return result
             return None
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting adopter by cpf: {e}")
             return None
         
@@ -89,5 +91,6 @@ class AdopterService:
                 return ResponseDTO(animals, "Adopter animals retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO([], "Adopter has no animals", http.HTTPStatus.OK)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting adopter animals: {e}")
             return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)

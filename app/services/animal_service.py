@@ -1,10 +1,7 @@
 from datetime import datetime
 import http
-import fastapi
-from typing import Optional
 from app.domain.models.animal import AnimalModel
 from app.domain.database.db import Database
-from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from bson import ObjectId
 from app.domain.models.dto.response import ResponseDTO
 
@@ -40,6 +37,7 @@ class AnimalService:
                 
                 return ResponseDTO({"id": str(result.inserted_id)}, "Animal created successfully", http.HTTPStatus.CREATED)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error creating animal: {e}")
             return ResponseDTO(None, "Error on create animal", http.HTTPStatus.BAD_REQUEST)
 
@@ -66,6 +64,7 @@ class AnimalService:
                 else:
                     return ResponseDTO(None, "Error on update animal", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error updating animal: {e}")
             return ResponseDTO(None, "Error on update animal", http.HTTPStatus.BAD_REQUEST)
 
@@ -76,6 +75,7 @@ class AnimalService:
                 result = self.animals_collection.delete_one({"_id": ObjectId(animal_id)})
                 return True if result else False
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error deleting animal: {e}")
             return False
 
@@ -96,16 +96,17 @@ class AnimalService:
             
             # TODO: Melhorar isso usando dicionario ao inves de lista de animais
             ong_animals = response.data
-            animal_exists = False
+            has_animal = False
             for animal in ong_animals:
                 if animal["id"] == animal_id:
-                    animal_exists = True
+                    has_animal = True
                     break
-            if not animal_exists:
+            if not has_animal:
                 return ResponseDTO(None, "Animals doesn't belong to ong", http.HTTPStatus.UNAUTHORIZED)                
             
             return ResponseDTO(AnimalModel.animal_helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
         except Exception as e:
+            # TODO: Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting animal: {e}")
             return None
     
@@ -121,7 +122,7 @@ class AnimalService:
                 else:
                     return ResponseDTO(None, "Could not insert form", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            msg = f"Error updating ong animals: {e}"
-            print(msg)
-            return ResponseDTO(None, msg, http.HTTPStatus.BAD_REQUEST)
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
+            print(f"Error update animal forms: {e}")
+            return ResponseDTO(None, "Error update animal forms", http.HTTPStatus.BAD_REQUEST)
 

@@ -16,7 +16,10 @@ class FormService:
     def create_form(self, ong_id:str, animal_id:str, form: FormModel) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                animals = self.ong_service.get_ong_animals(ong_id)
+                response = self.ong_service.get_ong_animals(ong_id)
+                if response.status != http.HTTPStatus.OK:
+                    return response
+                animals = response.data
                 has_animal = False
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
@@ -35,12 +38,17 @@ class FormService:
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
+            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error creating Forms: {e}")
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
     def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str) -> ResponseDTO:
         try:
-            animals = self.ong_service.get_ong_animals(ong_id)
+            response = self.ong_service.get_ong_animals(ong_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+            animals = response.data
+
             has_animal = False
             animal_object = None
             has_form = False
