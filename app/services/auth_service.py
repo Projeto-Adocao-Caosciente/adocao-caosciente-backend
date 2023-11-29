@@ -14,7 +14,7 @@ class AuthService:
         self.ong_service = OngService()
         self.adopter_service = AdopterService()
 
-    def authenticate(self, user: str, password: str): 
+    def authenticate(self, user: str, password: str):
         if len(user) == 14:
             entitie = self.ong_service.get_ong_by_cnpj(user)
             model = OngModel()

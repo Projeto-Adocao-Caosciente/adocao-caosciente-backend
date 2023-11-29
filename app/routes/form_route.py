@@ -17,7 +17,7 @@ form_service = FormService(ong_service, animal_service)
 jwt_bearer = JWTBearer()
 
 @router.post("/{animal_id}", dependencies=[Depends(jwt_bearer)], status_code=201)
-async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.Config.schema_extra)):
+async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.Config.json_schema_extra)):
     ong_id = jwt_bearer.get_ong_user_id()
     response = form_service.create_form(ong_id, animal_id, form)
     return JSONResponse(

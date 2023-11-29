@@ -47,7 +47,6 @@ class AdopterModel(BaseModel):
             'state': self.state,
             'city': self.state,
             'address': self.address,
-            'number': self.number,
             'cep': self.cep,
             'birthdate': self.birthdate,
             'gender': self.gender,

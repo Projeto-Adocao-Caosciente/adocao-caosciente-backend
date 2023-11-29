@@ -29,7 +29,8 @@ class OngService:
                     return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
             print(f"Error creating ong: {e}")
-            return ResponseDTO(None, "Email or CNPJ already in use", http.HTTPStatus.BAD_REQUEST)
+            duplicated_field = str(e).split("index: ")[1].split("_")[0]
+            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)

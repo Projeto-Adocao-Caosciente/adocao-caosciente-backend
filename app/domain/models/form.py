@@ -7,7 +7,7 @@ class FormModel(BaseModel):
     answer_sheets: List[str] = []
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "title": "Questionario",
             "animal_id": "653efb24188b172ef77d8acc",
             "questions": [

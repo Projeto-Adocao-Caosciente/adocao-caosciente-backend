@@ -13,7 +13,7 @@ from app.domain.models.dto.response import ResponseDTO
 class AdopterService:
     def __init__(self):
         self.db = Database()
-        self.adopter_collection = self.db.get_database().get_collection("Adopter")
+        self.adopter_collection = self.db.get_database().get_collection("adopter")
 
     def create_adopter(self, adopter: AdopterModel) -> ResponseDTO:
         try:
@@ -31,7 +31,8 @@ class AdopterService:
                     return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
             print(f"Error creating adopter: {e}")
-            return ResponseDTO(None, "Email or CPF already in use", http.HTTPStatus.BAD_REQUEST)
+            duplicated_field = str(e).split("index: ")[1].split("_")[0]
+            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             print(f"Erro creating adopter: {e}")
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
