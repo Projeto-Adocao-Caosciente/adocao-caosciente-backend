@@ -1,11 +1,10 @@
-from ctypes import Union
 import http
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 from app.domain.models.login import LoginModel
 from app.domain.models.ong import OngModel
 from app.domain.models.adopter import AdopterModel
-from app.services.login_service import LoginService
+from app.services.auth_service import AuthService
 from app.services.jwt_service import JWTBearer
 
 router = APIRouter(
@@ -13,7 +12,7 @@ router = APIRouter(
     tags=['authentication']
 )
 
-login_service = LoginService()
+login_service = AuthService()
 jwt_bearer = JWTBearer()
 
 @router.post("/login")
@@ -46,4 +45,4 @@ async def register_ong(ong: OngModel = Body(..., example=OngModel.Config.json_sc
 
 @router.post("/register_adopter")
 async def register_adopter(adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
-    response = RedirectResponse(url='/adopter', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)
+    return RedirectResponse(url='/adopter', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)

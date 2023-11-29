@@ -1,5 +1,4 @@
 import http
-from typing import Union
 
 from fastapi.responses import RedirectResponse
 from app.services.ong_service import OngService
@@ -10,7 +9,7 @@ from app.domain.models.adopter import AdopterModel
 from app.domain.models.dto.response import ResponseDTO
 
 
-class LoginService:
+class AuthService:
     def __init__(self):
         self.ong_service = OngService()
         self.adopter_service = AdopterService()
@@ -85,5 +84,3 @@ class LoginService:
             return ResponseDTO(None, "Wrong user id", http.HTTPStatus.BAD_REQUEST)
         else:
             return ResponseDTO(None, "Invalid user", http.HTTPStatus.BAD_REQUEST)
-        
-        return ResponseDTO(None, "Failed to get user", http.HTTPStatus.BAD_REQUEST)

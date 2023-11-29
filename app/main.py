@@ -1,7 +1,7 @@
 import http
 import json
 from fastapi import FastAPI
-from app.routes import ong_route, animal_route, login_route, adopter_route, form_route
+from app.routes import ong_route, animal_route, auth_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 
@@ -46,7 +46,7 @@ api.add_middleware(
 
 api.include_router(ong_route.router)
 api.include_router(animal_route.router)
-api.include_router(login_route.router)
+api.include_router(auth_route.router)
 api.include_router(form_route.router)
 api.include_router(adopter_route.router)
 
