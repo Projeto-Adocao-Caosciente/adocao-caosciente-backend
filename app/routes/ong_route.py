@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_ong(request: Request):
-    request_id = request.state.requestId
+    request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
     response = ong_service.get_ong_by_id(ong_id, request_id)
     return JSONResponse(
@@ -29,9 +29,10 @@ async def read_ong(request: Request):
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_ong_animals():
+async def read_ong_animals(request: Request):
+    request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
-    response = ong_service.get_ong_animals(ong_id)
+    response = ong_service.get_ong_animals(ong_id, request_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()
@@ -39,6 +40,7 @@ async def read_ong_animals():
 
 @router.post("/", status_code=201)
 async def create_ong(
+    request: Request,
     ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)
 ):
     required_fields = ong.required_field_at_create()
@@ -49,10 +51,12 @@ async def create_ong(
             content=ResponseDTO(None, f"Missing required fields: {required_fields - received_fields}",http.HTTPStatus.BAD_REQUEST).dict()
         )
 
+    request_id = request.state.request_id
+
     ong.remove_mask_cnpj()
     ong.remove_mask_phone()
     
-    response = ong_service.create_ong(ong)
+    response = ong_service.create_ong(ong, request_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()
@@ -61,13 +65,16 @@ async def create_ong(
 
 @router.patch("/", dependencies=[Depends(jwt_bearer)])
 async def update_ong(
+    request: Request,
     ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)
 ):
     ong.remove_mask_cnpj()
     ong.remove_mask_phone()
+
+    request_id = request.state.request_id
     
     ong_id = jwt_bearer.get_user_id()
-    response = ong_service.update_ong(ong, ong_id)
+    response = ong_service.update_ong(ong, ong_id, request_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()

@@ -83,16 +83,16 @@ async def validation_exception_handler(request, exc):
 
 @api.middleware("http")
 async def log_requests(request, call_next):
-    requestId = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    request.state.requestId = requestId
-    logger = logging.LoggerAdapter(logging.getLogger(__name__), {"requestId": requestId})
-    logger.info(f"Request<{requestId}> start request path={request.url.path} method={request.method}")
+    request_id: str = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    request.state.request_id = request_id
+    logger = logging.LoggerAdapter(logging.getLogger(__name__), {"request_id": request_id})
+    logger.info(f"Request<{request_id}> start request path={request.url.path} method={request.method}")
     start_time = time.time()
 
     response = await call_next(request)
 
     process_time = (time.time() - start_time) * 1000
     formatted_process_time = "{:.2f}".format(process_time)
-    logger.info(f"id={requestId} completed_in={formatted_process_time}ms status_code={response.status_code}")
+    logger.info(f"id={request_id} completed_in={formatted_process_time}ms status_code={response.status_code}")
 
     return response
