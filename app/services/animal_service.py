@@ -5,7 +5,6 @@ from app.domain.database.db import Database
 from bson import ObjectId
 from app.domain.models.dto.response import ResponseDTO
 
-
 from app.services.ong_service import OngService
 
 class AnimalService:

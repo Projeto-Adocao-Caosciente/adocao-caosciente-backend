@@ -1,3 +1,4 @@
+import logging
 from bson import ObjectId
 from datetime import datetime
 import bcrypt
@@ -8,17 +9,16 @@ import http
 from app.domain.models.dto.response import ResponseDTO
 from pymongo.errors import DuplicateKeyError
 
+
 class OngService:
     def __init__(self):
         self.db = Database()
         self.ongs_collection = self.db.get_database().get_collection("ongs")
+        self.logger = logging.getLogger(__name__)
 
     def create_ong(self, ong: OngModel) -> ResponseDTO:
         try:
             with self.db.session.start_transaction():
-                # FIXME: Encriptar senha de alguma forma, aqui dá erro -> 'OngModel' object has no attribute 'password'
-                # salt = bcrypt.gensalt()  # definir rounds torna a operação mais lenta
-                # ong.password = bcrypt.hashpw(
                 current_time = datetime.now().isoformat()
                 ong.created_at = current_time
                 ong.updated_at = current_time
@@ -28,13 +28,11 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error creating ong: {e}")
+            self.logger.error(f"Error creating ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
             return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error creating ong: {e}")
+            self.logger.error(f"Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
         
 
@@ -72,15 +70,13 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error updating ong: {e}")
+            self.logger.error(f"Error updating ong: {e}")
             return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
 
     def delete_ong(self, ong_id: str) -> bool:
         try:
             with self.db.session.start_transaction():
                 deleted_ongs = self.db.get_database().get_collection("deleted_ongs")
-                # Verifica se o array ong.animals está vazio
                 
                 animals = self.get_ong_animals(ong_id)
                 if not animals:
@@ -90,23 +86,20 @@ class OngService:
                         result = self.ongs_collection.delete_one({"_id": ObjectId(ong_id)})
                     return True if result else False
 
-                # Se o array ong.animals não estiver vazio, retorna False
                 return False
 
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error deleting ong: {e}")
+            self.logger.error(f"Error deleting ong: {e}")
             return False
 
-    def get_ong_by_id(self, ong_id: str) -> ResponseDTO:
+    def get_ong_by_id(self, ong_id: str, request_id=None) -> ResponseDTO:
         try:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
                 return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting ong: {e}")
+            self.logger.error(f"id={request_id} Error getting ong: {e}")
             return ResponseDTO(None, "Error on get ong by id", http.HTTPStatus.BAD_REQUEST)
 
     def get_ong_by_cnpj(self, cnpj: str):
@@ -116,8 +109,7 @@ class OngService:
                 return result
             return None
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting ong by cnpj: {e}")
+            self.logger.error(f"Error getting ong by cnpj: {e}")
             return None
 
     def get_ong_animals(self, ong_id: str) -> ResponseDTO:
@@ -152,8 +144,7 @@ class OngService:
                 return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting ong animals: {e}")
+            self.logger.error(f"Error getting ong animals: {e}")
             return ResponseDTO(None, "Error on get ong animals", http.HTTPStatus.BAD_REQUEST)
     
     def update_ong_animals(self, ong_id, animal_id) -> ResponseDTO:
@@ -168,6 +159,5 @@ class OngService:
                 else:
                     return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error updating ong animals: {e}")
+            self.logger.error(f"Error updating ong animals: {e}")
             return ResponseDTO(None, "Error on update ong animals", http.HTTPStatus.BAD_REQUEST)
