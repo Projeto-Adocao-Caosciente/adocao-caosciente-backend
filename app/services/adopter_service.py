@@ -85,7 +85,7 @@ class AdopterService:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
                 self.logger.info(f"id={request_id} Adopter retrieved successfully")
-                return ResponseDTO({"type": Role.USER, "user": AdopterModel.adopter_helper(result)}, "Adopter retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": Role.USER, "user": AdopterModel.helper(result)}, "Adopter retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Adopter not found")
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:

@@ -47,7 +47,7 @@ class AnimalModel(BaseModel):
         }
     
     @staticmethod
-    def animal_helper(animal) -> dict:
+    def helper(animal) -> dict:
         return {
             "id": str(animal["_id"]),
             "name": animal["name"],

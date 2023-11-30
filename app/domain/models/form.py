@@ -31,7 +31,7 @@ class FormModel(BaseModel):
         }
         
     @staticmethod
-    def form_helper(form)->dict:
+    def helper(form)->dict:
         return {
             "id": str(form["_id"]),
             "title": form ["title"],

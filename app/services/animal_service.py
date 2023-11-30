@@ -113,7 +113,7 @@ class AnimalService:
                 self.logger.error(f"id={request_id} Animals doesn't belong to ong")
                 return ResponseDTO(None, "Animals doesn't belong to ong", http.HTTPStatus.UNAUTHORIZED)                
             self.logger.info(f"id={request_id} Animal retrieved successfully")
-            return ResponseDTO(AnimalModel.animal_helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
+            return ResponseDTO(AnimalModel.helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
         except Exception as e:
             self.logger.error(f"id={request_id} Error getting animal: {e}")
             return ResponseDTO(None, "Error on get animal", http.HTTPStatus.BAD_REQUEST)
