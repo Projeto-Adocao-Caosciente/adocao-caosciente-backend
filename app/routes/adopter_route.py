@@ -6,7 +6,7 @@ from app.services.jwt_service import JWTBearer
 
 router = APIRouter(
     prefix="/adopter",
-    tags=['adopte_data']
+    tags=['adopter_data']
 )
 
 adopter_service = AdopterService()

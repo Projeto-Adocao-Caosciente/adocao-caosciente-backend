@@ -9,6 +9,8 @@ import http
 from app.domain.models.dto.response import ResponseDTO
 from pymongo.errors import DuplicateKeyError
 
+from app.domain.models.roles import Role
+
 
 class OngService:
     def __init__(self):
@@ -101,7 +103,7 @@ class OngService:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
                 self.logger.info(f"id={request_id} Ong retrieved successfully")
-                return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": Role.ONG, "user": OngModel.helper(result)}, "Ong retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Ong not found")
             return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:

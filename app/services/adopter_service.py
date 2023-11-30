@@ -7,6 +7,7 @@ from app.domain.database.db import Database
 from app.domain.models.adopter import AdopterModel
 from app.domain.models.animal import AnimalModel
 from app.domain.models.dto.response import ResponseDTO
+from app.domain.models.roles import Role
 
 
 class AdopterService:
@@ -38,11 +39,10 @@ class AdopterService:
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
 
     def get_adopter_by_id(self, adopter_id: str) -> ResponseDTO:
-        print(adopter_id)
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
-                return ResponseDTO(AdopterModel.adopter_helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": Role.USER, "user": AdopterModel.helper(result)}, "Adopter retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
