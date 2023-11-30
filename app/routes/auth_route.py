@@ -39,13 +39,12 @@ async def refresh():
 
 @router.get("/profile", dependencies=[Depends(jwt_bearer)])
 async def profile():
-    id = jwt_bearer.get_user_id()
     roles = jwt_bearer.get_user_roles()
-    response = login_service.get_user(id, roles)
-    return JSONResponse(
-        status_code=response.status,
-        content=response.dict()
-    )
+    if "ong" in roles:
+        return RedirectResponse(url='/ong', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)
+    elif "user" in roles:
+        return RedirectResponse(url='/adopter', status_code=http.HTTPStatus.TEMPORARY_REDIRECT)
+    return ResponseDTO(None, "You don't have any role", http.HTTPStatus.UNAUTHORIZED).dict()
 
 @router.post("/register_ong")
 async def register_ong(ong: OngModel = Body(..., example=OngModel.Config.json_schema_extra)):

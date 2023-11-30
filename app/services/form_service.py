@@ -36,7 +36,7 @@ class FormService:
                     if response.status != http.HTTPStatus.OK :
                         return response
                     new_form = self.form_collection.find_one(result.inserted_id)
-                    return ResponseDTO(FormModel.form_helper(new_form),"Form created successfully", http.HTTPStatus.CREATED)
+                    return ResponseDTO(FormModel.helper(new_form),"Form created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
@@ -82,6 +82,7 @@ class FormService:
         try:
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
+                return ResponseDTO(FormModel.helper(result),"Form gotten successfully", http.HTTPStatus.OK)
                 self.logger.info(f"id = {request_id} Form gottern successfully")
                 return ResponseDTO(FormModel.form_helper(result),"Form gotten successfully", http.HTTPStatus.OK)
             self.logger.error(f"id = {request_id} error getting form")

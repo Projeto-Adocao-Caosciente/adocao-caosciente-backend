@@ -26,16 +26,16 @@ class AdopterModel(BaseModel):
     class Config:
         json_schema_extra = {
             "cpf": "12345678901",
-            "name": "I Ryan Maiden",
+            "name": "Adopter Name",
             "phone": "(11) 98765-4321",
             "state": "ST",
             "city": "City Name",
             "address": "Address Name",
-            "cep": "12.345-678",
+            "cep": "12345-678",
             "birthdate": "2003-01-01",
-            "gender": "Masculine",
+            "gender": "M",
             "email": "adopter@gmail.com",
-            "password": "senha"
+            "password": "your_password"
         }
 
     def __dict__(self) -> dict:

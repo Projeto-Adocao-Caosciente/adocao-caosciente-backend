@@ -1,66 +1,110 @@
 from datetime import datetime
 from bson import ObjectId
 import http
+import logging
 from pymongo.errors import DuplicateKeyError
 
 from app.domain.database.db import Database
 from app.domain.models.adopter import AdopterModel
 from app.domain.models.animal import AnimalModel
 from app.domain.models.dto.response import ResponseDTO
+from app.domain.models.roles import Role
 
 
 class AdopterService:
     def __init__(self):
         self.db = Database()
         self.adopter_collection = self.db.get_database().get_collection("adopter")
+        self.logger = logging.getLogger(__name__)
 
-    def create_adopter(self, adopter: AdopterModel) -> ResponseDTO:
+    def create_adopter(self, adopter: AdopterModel, request_id = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
         try:
             with self.db.session.start_transaction():
-                # FIXME: Encriptar senha de alguma forma, aqui dá erro -> 'OngModel' object has no attribute 'password'
-                # salt = bcrypt.gensalt()  # definir rounds torna a operação mais lenta
-                # ong.password = bcrypt.hashpw(
                 current_time = datetime.now().isoformat()
                 adopter.created_at = current_time
                 adopter.updated_at = current_time
                 result = self.adopter_collection.insert_one(adopter.model_dump())
                 if result:
+                    self.logger.info(f"id={request_id} Adopter created successfully")
                     return ResponseDTO({"id": str(result.inserted_id)}, "Adopter created successfully", http.HTTPStatus.CREATED)
                 else:
+                    self.logger.error(f"id={request_id} Error on create adopter")
                     return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
         except DuplicateKeyError as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error creating adopter: {e}")
+            self.logger.error(f"id={request_id} Error creating adopter: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO({"field": {
+                "key": duplicated_field,
+                "value": adopter.model_dump().get(duplicated_field, "")
+            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
         except Exception as e:
-            print(f"Erro creating adopter: {e}")
+            self.logger.error(f"id={request_id} Error creating adopter: {e}")
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
 
-    def get_adopter_by_id(self, adopter_id: str) -> ResponseDTO:
-        print(adopter_id)
+    def update_adopter(self, adopter: AdopterModel, adopter_id: str, request_id = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            with self.db.session.start_transaction():
+                old_adopter = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
+                if not old_adopter:
+                    self.logger.info(f"id={request_id} Adopter not found")
+                    return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
+                update_fields = { field : value for field, value in adopter.model_dump().items() if value != old_adopter[field] and value is not None }
+                if len(update_fields) == 0:
+                    self.logger.info(f"id={request_id} Adopter not modified")
+                    return ResponseDTO(None, "Adopter not modified", http.HTTPStatus.OK)
+                
+                if "password" in update_fields:
+                    self.logger.error(f"id={request_id} Password cannot be updated")
+                    return ResponseDTO(None, "Password cannot be updated", http.HTTPStatus.BAD_REQUEST)
+                
+                current_time = datetime.now().isoformat()
+                adopter.updated_at = current_time
+                result = self.adopter_collection.update_one(
+                    {"_id": ObjectId(adopter_id)}, 
+                    {"$set": adopter.model_dump()}
+                )
+                if result:
+                    self.logger.info(f"id={request_id} Adopter updated successfully")
+                    return ResponseDTO({"id": str(adopter_id)}, "Adopter updated successfully", http.HTTPStatus.OK)
+                self.logger.error(f"id={request_id} Error on update adopter")
+                return ResponseDTO(None, "Error on update adopter", http.HTTPStatus.BAD_REQUEST)
+        except DuplicateKeyError as e:
+            self.logger.error(f"id={request_id} Error updating adopter: {e}")
+            duplicated_field = str(e).split("index: ")[1].split("_")[0]
+            return ResponseDTO({"field": duplicated_field}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error updating adopter: {e}")
+            return ResponseDTO(None, "Error on update adopter", http.HTTPStatus.BAD_REQUEST)
+
+
+    def get_adopter_by_id(self, adopter_id: str, request_id = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
-                return ResponseDTO(AdopterModel.helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
+                self.logger.info(f"id={request_id} Adopter retrieved successfully")
+                return ResponseDTO({"type": Role.USER, "user": AdopterModel.helper(result)}, "Adopter retrieved successfully", http.HTTPStatus.OK)
+            self.logger.info(f"id={request_id} Adopter not found")
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            msg = f"Error getting adopter: {e}"
-            return ResponseDTO(None, msg , http.HTTPStatus.BAD_REQUEST)
+            self.logger.error(f"id={request_id} Error getting adopter: {e}")
+            return ResponseDTO(None, "Error getting adopter", http.HTTPStatus.BAD_REQUEST)
         
-    def get_adopter_by_cpf(self, cpf: str):
+    def get_adopter_by_cpf(self, cpf: str, request_id = ""):
+        self.logger.info(f"id={request_id} Start service")
         try:
             result = self.adopter_collection.find_one({"cpf": cpf})
             if result:
                 return result
             return None
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting adopter by cpf: {e}")
+            self.logger.error(f"id={request_id} Error getting adopter by cpf: {e}")
             return None
         
-    def get_adopter_animals(self, adopter_id: str) -> ResponseDTO:
+    def get_adopter_animals(self, adopter_id: str, request_id = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
         try:
             response = self.get_adopter_by_id(adopter_id)
             if response.status != http.HTTPStatus.OK:
@@ -88,12 +132,13 @@ class AdopterService:
                 }
             ]))
             if result:
+                self.logger.info(f"id={request_id} Adopter animals retrieved successfully")
                 animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
                 return ResponseDTO(animals, "Adopter animals retrieved successfully", http.HTTPStatus.OK)
+            self.logger.info(f"id={request_id} Adopter has no animals")
             return ResponseDTO([], "Adopter has no animals", http.HTTPStatus.OK)
         except Exception as e:
-            # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting adopter animals: {e}")
+            self.logger.error(f"id={request_id} Error getting adopter animals: {e}")
             return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)
         
     def insert_answer(self, adopter_id: str, answer_id: str, request_id: str = "") -> ResponseDTO:

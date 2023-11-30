@@ -9,6 +9,8 @@ import http
 from app.domain.models.dto.response import ResponseDTO
 from pymongo.errors import DuplicateKeyError
 
+from app.domain.models.roles import Role
+
 
 class OngService:
     def __init__(self):
@@ -33,7 +35,10 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on create ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO({"field": {
+                "key": duplicated_field,
+                "value": ong.model_dump().get(duplicated_field, "")
+            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
         except Exception as e:
             self.logger.error(f"id={request_id} Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
@@ -71,7 +76,10 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on update ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO({"field": {
+                "key": duplicated_field,
+                "value": ong.model_dump().get(duplicated_field, "")
+            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
         except Exception as e:
             self.logger.error(f"id={request_id} Error updating ong: {e}")
             return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
@@ -101,7 +109,7 @@ class OngService:
             result = self.ongs_collection.find_one({"_id": ObjectId(ong_id)})
             if result:
                 self.logger.info(f"id={request_id} Ong retrieved successfully")
-                return ResponseDTO(OngModel.helper(result), "Ong retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO({"type": Role.ONG, "user": OngModel.helper(result)}, "Ong retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Ong not found")
             return ResponseDTO(None, "Ong not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
