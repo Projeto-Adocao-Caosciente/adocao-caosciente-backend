@@ -46,8 +46,8 @@ class AdopterService:
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            print(f"Error getting adopter: {e}")
-            return ResponseDTO(None, "Error getting adopter", http.HTTPStatus.BAD_REQUEST)
+            msg = f"Error getting adopter: {e}"
+            return ResponseDTO(None, msg , http.HTTPStatus.BAD_REQUEST)
         
     def get_adopter_by_cpf(self, cpf: str):
         try:
@@ -95,3 +95,21 @@ class AdopterService:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
             print(f"Error getting adopter animals: {e}")
             return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)
+        
+    def insert_answer(self, adopter_id: str, answer_id: str, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            with self.db.session.start_transaction():
+                result = self.adopter_collection.update_one(
+                    {"_id": ObjectId(adopter_id)},
+                    {"$push": {"answers": answer_id}}
+                )
+                if result:
+                    self.logger.info(f"id={request_id} Answer inserted")
+                    return ResponseDTO(result, "Answer inserted", http.HTTPStatus.OK)
+                else:
+                    self.logger.error(f"id={request_id} Could not insert answer")
+                    return ResponseDTO(None, "Could not insert answer", http.HTTPStatus.BAD_REQUEST)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error update adopter answer: {e}")          
+            return ResponseDTO(None, "Error update adopter answers", http.HTTPStatus.BAD_REQUEST)
