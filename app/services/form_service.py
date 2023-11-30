@@ -1,4 +1,5 @@
 import http
+import logging
 from bson import ObjectId
 from app.domain.database.db import Database
 from app.domain.models.form import FormModel
@@ -12,6 +13,7 @@ class FormService:
         self.ong_service = ong_service
         self.animal_service = animal_service
         self.form_collection = self.db.get_database().get_collection("forms")
+        self.logger = logging.getLogger(__name__)
         
     def create_form(self, ong_id:str, animal_id:str, form: FormModel) -> ResponseDTO:
         try:
@@ -42,13 +44,14 @@ class FormService:
             print(f"Error creating Forms: {e}")
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
-    def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str) -> ResponseDTO:
+    def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str, request_id: str = "") -> ResponseDTO:
         try:
             response = self.ong_service.get_ong_animals(ong_id)
             if response.status != http.HTTPStatus.OK:
                 return response
             animals = response.data
-
+            if not animals:
+                 return ResponseDTO(None, "There is no animals in ONG.", http.HTTPStatus.OK)
             has_animal = False
             animal_object = None
             has_form = False
@@ -66,15 +69,28 @@ class FormService:
             
             if not has_form:
                 return ResponseDTO(None, "This form doesn't belong to this animal", http.HTTPStatus.BAD_REQUEST)
-            result = self.form_collection.find_one({"_id": ObjectId(form_id)})
-            if result:
-                return ResponseDTO(FormModel.form_helper(result),"Form gotten successfully", http.HTTPStatus.OK)
-            return ResponseDTO(None, "Couldn't find Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
+            return self.get_form(form_id, request_id)
+            
         except Exception as e:
             message = f"Error getting Form: {e}"
             print(message)
             return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)
-        
+    
+    def get_form (self, form_id: str, request_id: str = "")-> ResponseDTO:
+        if request_id == "":
+            self.logger.info(f"id = {request_id} starting get form")
+        try:
+            result = self.form_collection.find_one({"_id": ObjectId(form_id)})
+            if result:
+                self.logger.info(f"id = {request_id} Form gottern successfully")
+                return ResponseDTO(FormModel.form_helper(result),"Form gotten successfully", http.HTTPStatus.OK)
+            self.logger.error(f"id = {request_id} error getting form")
+            return ResponseDTO(None, "Couldn't find Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
+        except Exception as e:
+            message = f"Error getting Form: {e}"
+            print(message)
+            self.logger.error(f"id = {request_id} {message}")
+            return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)  
         
     def get_questions(self, ong_id: str,  animal_id:str, form_id: str, answers: bool = False) -> ResponseDTO:
         response = self.get_form_by_id(ong_id, animal_id, form_id)
