@@ -59,7 +59,7 @@ class AdopterModel(BaseModel):
         }
     
     @staticmethod
-    def helper(adopter) -> dict:
+    def adopter_helper(adopter) -> dict:
         return {
             "id": str(adopter["_id"]),
             "cpf": adopter["cpf"],

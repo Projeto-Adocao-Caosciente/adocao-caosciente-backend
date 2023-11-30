@@ -79,4 +79,3 @@ async def update_ong(
         status_code=response.status,
         content=response.dict()
     )
-    

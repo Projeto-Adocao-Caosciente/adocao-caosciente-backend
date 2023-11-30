@@ -35,7 +35,10 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on create ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO({"field": {
+                "key": duplicated_field,
+                "value": ong.model_dump().get(duplicated_field, "")
+            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
         except Exception as e:
             self.logger.error(f"id={request_id} Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
@@ -73,7 +76,10 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on update ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO(None, duplicated_field + " already in use", http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO({"field": {
+                "key": duplicated_field,
+                "value": ong.model_dump().get(duplicated_field, "")
+            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
         except Exception as e:
             self.logger.error(f"id={request_id} Error updating ong: {e}")
             return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
