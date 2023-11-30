@@ -5,18 +5,14 @@ from app.domain.database.db import Database
 from app.domain.models.form import FormModel
 from app.domain.models.answerSheet import AnswerSheetModel
 from app.domain.models.dto.response import ResponseDTO
-from app.services.ong_service import OngService
-from app.services.animal_service import AnimalService
 from app.services.form_service import FormService
 from app.services.adopter_service import AdopterService
 
 
 class AnswerSheetService:
     # TODO: Fix when rebasing with adopter CR
-    def __init__(self,ong_service: OngService, animal_service: AnimalService, form_service: FormService, adopter_service: AdopterService):
+    def __init__(self, form_service: FormService, adopter_service: AdopterService):
         self.db = Database()
-        self.ong_service = ong_service
-        self.animal_service = animal_service
         self.form_service = form_service
         self.adopter_service = adopter_service
         self.answer_sheet_collection = self.db.get_database().get_collection("answer_sheets")
@@ -28,10 +24,19 @@ class AnswerSheetService:
             with self.db.session.start_transaction():
                 answerSheet.adopter_id = user_id
                 answerSheet.form_id = form_id
-                result = self.answer_sheet_collection.insert_one(answerSheet.dict())
+                result_form = self.form_service.form_collection.find_one({"_id": ObjectId(form_id)})
+                if not result_form:
+                    self.logger.error(f"id={request_id} Form not found")
+                    return ResponseDTO(None, "Form not Found", http.HTTPStatus.BAD_REQUEST)
+                if len(result_form.get("questions")) != len(answerSheet.answers):
+                    self.logger.error(f"id={request_id} Invalid Answers")
+                    return ResponseDTO(None, "Invalid Answers", http.HTTPStatus.BAD_REQUEST)
+                result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
                 if result:
                     self.logger.info(f"id={request_id} Answer Sheet Created Successfully")
-                    self.adopter_service.insert_answer(user_id, result.inserted_id)
+                    #TODO: Tratar responses da inserção
+                    adopter_response = self.adopter_service.insert_answer(user_id, result.inserted_id)
+                    form_response = self.form_service.insert_answer(form_id, result.inserted_id)
                     return ResponseDTO(AnswerSheetModel.answer_sheet_helper(result),"Answer Sheet created successfully", http.HTTPStatus.CREATED)
                 else:
                     self.logger.error(f"id={request_id} Error on Create answer sheet")
