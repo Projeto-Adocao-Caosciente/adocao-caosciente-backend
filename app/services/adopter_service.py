@@ -42,7 +42,7 @@ class AdopterService:
         try:
             result = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
             if result:
-                return ResponseDTO(AdopterModel.adopter_helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
+                return ResponseDTO(AdopterModel.helper(result), "Adopter retrieved successfully", http.HTTPStatus.OK)
             return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
         except Exception as e:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
