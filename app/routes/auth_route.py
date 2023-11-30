@@ -1,6 +1,7 @@
 import http
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
+from app.domain.models.dto.response import ResponseDTO
 from app.domain.models.login import LoginModel
 from app.domain.models.ong import OngModel
 from app.domain.models.adopter import AdopterModel
@@ -29,7 +30,7 @@ async def token(
         role = ""
         
     token = jwt_bearer.sign_jwt(user["id"], role)
-    return {"access_token": token}
+    return ResponseDTO({"access_token": token}, "Login successfully", http.HTTPStatus.OK).dict()
 
 @router.post("/refresh-token", dependencies=[Depends(jwt_bearer)])
 async def refresh():
