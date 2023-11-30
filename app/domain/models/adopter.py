@@ -18,7 +18,7 @@ class AdopterModel(BaseModel):
     email: str = Field(None, max_length=60)
     photo: str = Field(None, )
     animals: List[str] = Field([], )
-    responses: List[str] = Field([], )
+    answers: List[str] = Field([], )
     created_at: str = Field(None, )
     updated_at: str = datetime.now().isoformat()
     password: str = Field(None, min_length=4, max_length=60)
@@ -52,14 +52,14 @@ class AdopterModel(BaseModel):
             'email': self.email,
             'photo': self.photo,
             'animals': self.animals,
-            'responses': self.responses,
+            'answers': self.answers,
             'created_at': self.created_at,
             'updated_at': datetime.now(),
             'password': self.password,
         }
     
     @staticmethod
-    def helper(adopter) -> dict:
+    def adopter_helper(adopter) -> dict:
         return {
             "id": str(adopter["_id"]),
             "cpf": adopter["cpf"],
@@ -73,8 +73,8 @@ class AdopterModel(BaseModel):
             "gender": adopter["gender"],
             "email": adopter["email"],
             "photo": adopter["photo"],
-            "animals": adopter["animals"],
-            "responses": adopter["responses"],
+            "animals": [str(animal) for animal in adopter["animals"]],
+            "answers": [str(answer) for answer in adopter["answers"]],
             "created_at": adopter["created_at"],
             "updated_at": adopter["updated_at"],
         }
