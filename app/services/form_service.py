@@ -40,7 +40,7 @@ class FormService:
                     if response.status != http.HTTPStatus.OK:
                         return response
                     #new_form = self.form_collection.find_one(result.inserted_id)
-                    return ResponseDTO(result.inserted_id,"Form created successfully", http.HTTPStatus.CREATED)
+                    return ResponseDTO({"id": result.inserted_id},"Form created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
