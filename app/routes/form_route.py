@@ -18,6 +18,7 @@ jwt_bearer = JWTBearer()
 
 @router.post("/{animal_id}", dependencies=[Depends(jwt_bearer)], status_code=201)
 async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.Config.json_schema_extra)):
+    print("create form")
     ong_id = jwt_bearer.get_user_id()
     response = form_service.create_form(ong_id, animal_id, form)
     return JSONResponse(
@@ -25,21 +26,13 @@ async def create_form(animal_id, form: FormModel = Body(..., example=FormModel.C
         content=response.dict()
     )
 
-# TODO: ler Form via ID, verificando se a ong tem permissão
-@router.get("/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_form_by_id(animal_id:str, form_id: str):
-    ong_id = jwt_bearer.get_user_id()
-    response = form_service.get_form_by_id(ong_id, animal_id, form_id)
-    return JSONResponse(
-        status_code = response.status,
-        content=response.dict()
-    )
 
 @router.get("/{animal_id}/", dependencies=[Depends(jwt_bearer)], status_code=200)
 async def read_forms_from_animal(
     request: Request,
     animal_id: str
     ):
+    print("get animal")
     request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
     response = form_service.get_forms_from_animal(animal_id,ong_id, request_id)
@@ -53,6 +46,7 @@ async def get_questions(
     request: Request, 
     animal_id:str, 
     form_id: str):
+    print("question")
     ong_id = jwt_bearer.get_user_id()
     response = form_service.get_questions(ong_id, animal_id, form_id)
     return JSONResponse(
@@ -60,3 +54,28 @@ async def get_questions(
         content=response.dict()
     )
 
+@router.get("/answers/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
+async def read_answers_sheet(
+    request: Request,
+    form_id: str
+    ):
+    print("answer")
+    request_id = request.state.request_id
+    response = form_service.get_answer_sheets(form_id,request_id)
+    return JSONResponse(
+        status_code = response.status,
+        content=response.dict()
+    )
+
+# TODO: ler Form via ID, verificando se a ong tem permissão
+@router.get("/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
+async def read_form_by_id(animal_id:str, form_id: str, request: Request):
+    print("read form by id")
+    request_id = request.state.request_id
+    ong_id = jwt_bearer.get_user_id()
+    response = form_service.get_form_by_id(ong_id, animal_id, form_id)
+    #response = form_service.get_answer_sheets(form_id,request_id)
+    return JSONResponse(
+        status_code = response.status,
+        content=response.dict()
+    )

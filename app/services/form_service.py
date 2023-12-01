@@ -6,6 +6,7 @@ from app.domain.models.form import FormModel
 from app.domain.models.dto.response import ResponseDTO
 from app.services.ong_service import OngService
 from app.services.animal_service import AnimalService
+from app.domain.models.answerSheet import AnswerSheetModel
 
 class FormService:
     def __init__(self,ong_service: OngService, animal_service: AnimalService):
@@ -15,28 +16,31 @@ class FormService:
         self.form_collection = self.db.get_database().get_collection("forms")
         self.logger = logging.getLogger(__name__)
         
-    def create_form(self, ong_id:str, animal_id:str, form: FormModel) -> ResponseDTO:
+    def create_form(self, ong_id:str, animal_id:str, form: FormModel, request_id:str = "") -> ResponseDTO:
+        self.logger.info(f"id = {request_id} starting create form")
         try:
             with self.db.session.start_transaction():
                 response = self.ong_service.get_ong_animals(ong_id)
-                if response.status != http.HTTPStatus.OK:
-                    return response
+                if response.status != http.HTTPStatus.OK or not response.data: #baseado no reponse.data
+                    #TODO; logging nao tem animal na ong
+                    return ResponseDTO(None, "Ong has no animals", http.HTTPStatus.BAD_REQUEST)
                 animals = response.data
-                has_animal = False
+                animal_exist = False
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
-                        has_animal = True
+                        animal_exist = True
                         break
-                if not has_animal:
+                if not animal_exist:
                     return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
                 form.animal_id = animal_id
                 result = self.form_collection.insert_one(form.model_dump())
                 if result:
                     response = self.animal_service.insert_form(animal_id, result.inserted_id)
-                    if response.status != http.HTTPStatus.OK :
+                    # TODO: tratar rollback
+                    if response.status != http.HTTPStatus.OK:
                         return response
-                    new_form = self.form_collection.find_one(result.inserted_id)
-                    return ResponseDTO(FormModel.helper(new_form),"Form created successfully", http.HTTPStatus.CREATED)
+                    #new_form = self.form_collection.find_one(result.inserted_id)
+                    return ResponseDTO(result.inserted_id,"Form created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
@@ -45,29 +49,31 @@ class FormService:
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
     def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id = {request_id} starting get form by id")
         try:
             response = self.ong_service.get_ong_animals(ong_id)
             if response.status != http.HTTPStatus.OK:
                 return response
             animals = response.data
             if not animals:
-                 return ResponseDTO(None, "There is no animals in ONG.", http.HTTPStatus.OK)
-            has_animal = False
+                 return ResponseDTO(None, "There is no animals in ONG.", http.HTTPStatus.BAD_REQUEST)
+            animal_exist = False
             animal_object = None
-            has_form = False
+            form_exist = False
             for animal in animals:
                 if str(animal.get("id")) == animal_id:
-                    has_animal = True
+                    animal_exist = True
                     animal_object = animal
                     break
-            if not has_animal:
+            if not animal_exist:
                 return ResponseDTO(None, "Animal doesn't belongs to ONG.", http.HTTPStatus.BAD_REQUEST)
             
-            for f in animal_object.get("forms"):
-                if f == form_id:
-                    has_form = True
-            
-            if not has_form:
+            for form in animal_object.get("forms"):
+                if form == form_id:
+                    form_exist = True
+                    break
+                
+            if not form_exist:
                 return ResponseDTO(None, "This form doesn't belong to this animal", http.HTTPStatus.BAD_REQUEST)
             return self.get_form(form_id, request_id)
             
@@ -82,9 +88,8 @@ class FormService:
         try:
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
-                return ResponseDTO(FormModel.helper(result),"Form gotten successfully", http.HTTPStatus.OK)
                 self.logger.info(f"id = {request_id} Form gottern successfully")
-                return ResponseDTO(FormModel.form_helper(result),"Form gotten successfully", http.HTTPStatus.OK)
+                return ResponseDTO(FormModel.helper(result),"Form gotten successfully", http.HTTPStatus.OK)
             self.logger.error(f"id = {request_id} error getting form")
             return ResponseDTO(None, "Couldn't find Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
@@ -108,10 +113,39 @@ class FormService:
         del response.data['answer_sheets']
         return response
     
-    
-    def get_answer_sheets(self, formID) -> ResponseDTO:
-        #TODO: Retorna uma lista dos IDs das folhas de respostas dos participantes
-        return
+    def get_answer_sheets(self, form_id: str, request_id:str = "") -> ResponseDTO:
+        try:
+            result = list(self.form_collection.aggregate([
+                {
+                    "$match": {"_id": ObjectId(form_id)}
+                },
+                {
+                    "$lookup": {
+                        "from": "answer_sheets",
+                        "localField": "answer_sheets",
+                        "foreignField": "_id",
+                        "as": "answer_sheets"
+                    }
+                },
+                {
+                    "$sort": {"answer_sheets.created_at": -1, "answer_sheets.name": 1}
+                },
+                {
+                    "$project": {
+                        "answer_sheets": 1
+                    }
+                }
+            ]))
+            if result:
+                answers = [AnswerSheetModel.helper(answer) for answer in result[0]["answer_sheets"]]
+                self.logger.info(f"id={request_id} form answers retrieved successfully")
+                print(result, answers)
+                return ResponseDTO(answers, "form answers retrieved successfully", http.HTTPStatus.OK)
+            self.logger.info(f"id={request_id} form has no answers")
+            return ResponseDTO([], "form has no answers", http.HTTPStatus.OK)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error getting form answers: {e}")
+            return ResponseDTO(None, "Error on get form answers", http.HTTPStatus.BAD_REQUEST)
 
     def get_forms_from_animal(self, animal_id:str, ong_id: str, request_id:str = ""):
         self.logger.info(f"id={request_id} Start service")
@@ -137,17 +171,20 @@ class FormService:
                     },
                     {
                         "$project": {
-                            "forms":1
+                            "forms":{
+                                "_id":1,
+                                "title":1
+                            }
                         }
                     }
             ]
             result = list(self.animal_service.animals_collection.aggregate(pipeline))
             if result:
                 forms = [FormModel.helper(form) for form in result[0]["forms"]]
-                for form in forms:
+                '''for form in forms:
                     del form["animal_id"]
                     del form["questions"]
-                    del form["answer_sheets"]
+                    del form["answer_sheets"]'''
                 self.logger.info(f"id={request_id} Forms retrived successfully")
                 return ResponseDTO(forms, "Forms retrived sucessfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Animal has no forms")
@@ -155,4 +192,22 @@ class FormService:
         except Exception as e:
             self.logger.error(f"if={request_id} Error getting form {e}")
             return ResponseDTO(None, "Error getting forms from animal", http.HTTPStatus.BAD_REQUEST)
+        
+    def insert_answer(self, form_id: str, answer_id: str, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            with self.db.session.start_transaction():
+                result = self.form_collection.update_one(
+                    {"_id": ObjectId(form_id)},
+                    {"$push": {"answer_sheets": answer_id}}
+                )
+                if result:
+                    self.logger.info(f"id={request_id} answer inserted in form")
+                    return ResponseDTO(result, "answer inserted in form", http.HTTPStatus.OK)
+                else:
+                    self.logger.error(f"id={request_id} Could not insert answer")
+                    return ResponseDTO(None, "Could not insert answer", http.HTTPStatus.BAD_REQUEST)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error update form answer: {e}")          
+            return ResponseDTO(None, "Error update form anwer", http.HTTPStatus.BAD_REQUEST)
     
