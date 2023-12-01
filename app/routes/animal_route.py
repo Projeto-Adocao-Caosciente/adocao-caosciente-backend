@@ -9,7 +9,7 @@ from app.services.ong_service import OngService
 from app.services.jwt_service import JWTBearer
 
 router = APIRouter(
-    prefix="/animal",
+    prefix="/ong/animals",
     tags=['animals_data']
 )
 

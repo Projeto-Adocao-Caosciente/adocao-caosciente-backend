@@ -27,8 +27,8 @@ class AnimalService:
                 if response.status != http.HTTPStatus.OK:
                     self.logger.error(f"id={request_id} Error creating animal: {response.message}")
                     return response
-                
-                ong_id = response.data["id"]
+
+                ong_id = response.data['user']['id']
 
                 result = self.animals_collection.insert_one(animal.model_dump())
                 if not result:
