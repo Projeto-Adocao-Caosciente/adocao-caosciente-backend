@@ -33,7 +33,7 @@ class AdopterModel(BaseModel):
             "address": "Address Name",
             "cep": "12345-678",
             "birthdate": "2003-01-01",
-            "gender": "M",
+            "gender": "Masculine",
             "email": "adopter@gmail.com",
             "password": "your_password"
         }
@@ -94,13 +94,19 @@ class AdopterModel(BaseModel):
         }
         return real_field_name[field]
 
-    def remove_mask_cpf(self):
+    def remove_mask_cpf(self) -> None:
+        if self.cpf is None:
+            return
         self.cpf = self.remove_non_digits(self.model_dump()["cpf"])
 
-    def remove_mask_cep(self):
+    def remove_mask_cep(self) -> None:
+        if self.cep is None:
+            return
         self.cep = self.remove_non_digits(self.model_dump()["cep"])
 
-    def remove_mask_phone(self):
+    def remove_mask_phone(self) -> None:
+        if self.phone is None:
+            return
         self.phone = self.remove_non_digits(self.model_dump()["phone"])
     
     def remove_non_digits(self, value):

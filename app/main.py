@@ -25,7 +25,7 @@ api = FastAPI(
         "name": "Support Team",
         "url": "https://adocao-caosciente-frontend.vercel.app/contact",
     },
-    version="0.1.0"
+    version="0.1.0",
 )
 
 origins = [
