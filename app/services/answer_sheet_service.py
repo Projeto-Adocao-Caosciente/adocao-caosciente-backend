@@ -59,7 +59,7 @@ class AnswerSheetService:
             result = self.answer_sheet_collection.find_one({"_id": ObjectId(answerSheet_id)})
             if result:
                 self.logger.info(f"id={request_id} success getting answer sheet")
-                return ResponseDTO(FormModel.form_helper(result),"Answer Sheet gotten successfully", http.HTTPStatus.OK)
+                return ResponseDTO(FormModel.helper(result),"Answer Sheet gotten successfully", http.HTTPStatus.OK)
             self.logger.info(f"id= {request_id} Couldn't find Answer Sheet")
             return ResponseDTO(None, "Couldn't find Answer Sheet", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
