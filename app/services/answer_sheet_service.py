@@ -19,16 +19,18 @@ class AnswerSheetService:
         self.logger = logging.getLogger(__name__)
 
     def create_answer_sheet(self, user_id: str, form_id: str,  answerSheet: AnswerSheetModel, request_id: str = ""):
-        self.logger.info(f"id={request_id} Start service")
+        self.logger.info(f"id={request_id} Start service create answer Sheet")
+        
         try:
             with self.db.session.start_transaction():
+                print("######")
                 answerSheet.adopter_id = user_id
                 answerSheet.form_id = form_id
                 result_form = self.form_service.form_collection.find_one({"_id": ObjectId(form_id)})
                 if not result_form:
                     self.logger.error(f"id={request_id} Form not found")
                     return ResponseDTO(None, "Form not Found", http.HTTPStatus.BAD_REQUEST)
-                if len(result_form.get("questions")) != len(answerSheet.answers):
+                if len(result_form.get("questions")) != len(answerSheet.model_dump().get("answers")):
                     self.logger.error(f"id={request_id} Invalid Answers")
                     return ResponseDTO(None, "Invalid Answers", http.HTTPStatus.BAD_REQUEST)
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
@@ -37,7 +39,8 @@ class AnswerSheetService:
                     #TODO: Tratar responses da inserção
                     adopter_response = self.adopter_service.insert_answer(user_id, result.inserted_id)
                     form_response = self.form_service.insert_answer(form_id, result.inserted_id)
-                    return ResponseDTO(AnswerSheetModel.answer_sheet_helper(result),"Answer Sheet created successfully", http.HTTPStatus.CREATED)
+                    self.logger.info(f"id={request_id} Answer Sheet Inserted succesfully")
+                    return ResponseDTO(result.inserted_id, "Answer Sheet created successfully", http.HTTPStatus.CREATED)
                 else:
                     self.logger.error(f"id={request_id} Error on Create answer sheet")
                     return ResponseDTO(None, "Error on Create Answer Sheet.", http.HTTPStatus.BAD_REQUEST)
@@ -53,7 +56,7 @@ class AnswerSheetService:
             if answerSheet_id not in user.get('answer_sheets'):
                 self.logger.error(f"id={request_id} Error getting answer: answersheet doesn't belong to user")
                 return ResponseDTO(None, "Answer Sheet doesn't belong to user", http.HTTPStatus.BAD_REQUEST)
-            result = self.answerSheets_collection.find_one({"_id": ObjectId(answerSheet_id)})
+            result = self.answer_sheet_collection.find_one({"_id": ObjectId(answerSheet_id)})
             if result:
                 self.logger.info(f"id={request_id} success getting answer sheet")
                 return ResponseDTO(FormModel.form_helper(result),"Answer Sheet gotten successfully", http.HTTPStatus.OK)
@@ -63,6 +66,6 @@ class AnswerSheetService:
             msg = f"Error getting Answer Sheet: {e}"
             self.logger.error(f"id={request_id} {msg}")
             return ResponseDTO(None, msg, http.HTTPStatus.BAD_REQUEST)
-    
+
 
     
