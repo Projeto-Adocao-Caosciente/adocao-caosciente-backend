@@ -139,7 +139,7 @@ class AdopterService:
             return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)
         
     def insert_answer(self, adopter_id: str, answer_id: str, request_id: str = "") -> ResponseDTO:
-        self.logger.info(f"id={request_id} Start service")
+        self.logger.info(f"id={request_id} Start service insert answer")
         try:
             with self.db.session.start_transaction():
                 result = self.adopter_collection.update_one(
@@ -147,8 +147,8 @@ class AdopterService:
                     {"$push": {"answers": answer_id}}
                 )
                 if result:
-                    self.logger.info(f"id={request_id} Answer inserted")
-                    return ResponseDTO(result, "Answer inserted", http.HTTPStatus.OK)
+                    self.logger.info(f"id={request_id} Answer inserted in adopter")
+                    return ResponseDTO(result, "Answer inserted in adopter", http.HTTPStatus.OK)
                 else:
                     self.logger.error(f"id={request_id} Could not insert answer")
                     return ResponseDTO(None, "Could not insert answer", http.HTTPStatus.BAD_REQUEST)
