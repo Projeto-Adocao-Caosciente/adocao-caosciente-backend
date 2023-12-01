@@ -8,11 +8,13 @@ from app.domain.models.animal import AnimalModel
 from app.domain.models.ong import OngModel
 from app.domain.database.db import Database
 import http
-from app.domain.models.dto.response import ResponseDTO
+from app.domain.models.dto.response import duplicate_key_response, ResponseDTO
 from pymongo.errors import DuplicateKeyError
 from app.domain.models.roles import Role
 
 from Levenshtein import distance as levenshtein_distance
+
+from utils.util import Util
 
 class OngService:
     def __init__(self):
@@ -37,10 +39,7 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on create ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO({"field": {
-                "key": duplicated_field,
-                "value": ong.model_dump().get(duplicated_field, "")
-            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
+            return duplicate_key_response(duplicated_field, OngModel.match_field)
         except Exception as e:
             self.logger.error(f"id={request_id} Error creating ong: {e}")
             return ResponseDTO(None, "Error on create ong", http.HTTPStatus.BAD_REQUEST)
@@ -78,10 +77,7 @@ class OngService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error on update ong: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO({"field": {
-                "key": duplicated_field,
-                "value": ong.model_dump().get(duplicated_field, "")
-            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
+            return duplicate_key_response(duplicated_field, OngModel.match_field)
         except Exception as e:
             self.logger.error(f"id={request_id} Error updating ong: {e}")
             return ResponseDTO(None, "Error on update ong", http.HTTPStatus.BAD_REQUEST)
@@ -174,12 +170,15 @@ class OngService:
                 if ong_animals.status != http.HTTPStatus.OK:
                     return ong_animals
                 
+                # Normalize name
                 name = name.lower()
-                name = "".join(c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn")
+                name = Util.remove_accents(name)
 
+                # Normalize animals names
                 animals = ong_animals.data
-                normalized_animals_names = ["".join(c for c in unicodedata.normalize("NFD", animal['name'].lower()) if unicodedata.category(c) != "Mn") for animal in animals]
+                normalized_animals_names = [Util.remove_accents(animal['name'].lower()) for animal in animals]
 
+                # Filter by name
                 filtered_animals = []
                 THRESHOLD = 3
                 for idx, normalized_animal_name in enumerate(normalized_animals_names):
@@ -189,6 +188,12 @@ class OngService:
                 if not filtered_animals:
                     self.logger.info(f"id={request_id} Ong has no animals with a similar name")
                     return ResponseDTO([], "Ong has no animals with a similar name", http.HTTPStatus.OK)
+                
+                # Sort by similiarity with name
+                # NOTE: the levenshtein_distance is not a good metric for this, but it's the best we have for now
+                # TODO: find a better way to sort by similarity
+                # the names already have accents removed, so we don't need to remove them again
+                filtered_animals.sort(key=lambda animal: levenshtein_distance(animal['name'].lower(), name))
 
                 self.logger.info(f"id={request_id} Ong animals retrieved successfully")
                 return ResponseDTO(filtered_animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)

@@ -5,7 +5,7 @@ import random
 import string
 import time
 from fastapi import FastAPI
-from app.routes import ong_route, animal_route, auth_route, adopter_route, form_route
+from app.routes import ong_route, auth_route, adopter_route, form_route
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 
@@ -58,11 +58,10 @@ api.add_middleware(
     allow_headers=headers,
 )
 
-api.include_router(ong_route.router)
-api.include_router(animal_route.router)
 api.include_router(auth_route.router)
-api.include_router(form_route.router)
+api.include_router(ong_route.router)
 api.include_router(adopter_route.router)
+api.include_router(form_route.router)
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 

@@ -7,7 +7,7 @@ from pymongo.errors import DuplicateKeyError
 from app.domain.database.db import Database
 from app.domain.models.adopter import AdopterModel
 from app.domain.models.animal import AnimalModel
-from app.domain.models.dto.response import ResponseDTO
+from app.domain.models.dto.response import ResponseDTO, duplicate_key_response
 from app.domain.models.roles import Role
 
 
@@ -34,10 +34,7 @@ class AdopterService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error creating adopter: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO({"field": {
-                "key": duplicated_field,
-                "value": adopter.model_dump().get(duplicated_field, "")
-            }}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
+            return duplicate_key_response(duplicated_field, AdopterModel.match_field)
         except Exception as e:
             self.logger.error(f"id={request_id} Error creating adopter: {e}")
             return ResponseDTO(None, "Error on create adopter", http.HTTPStatus.BAD_REQUEST)
@@ -73,7 +70,7 @@ class AdopterService:
         except DuplicateKeyError as e:
             self.logger.error(f"id={request_id} Error updating adopter: {e}")
             duplicated_field = str(e).split("index: ")[1].split("_")[0]
-            return ResponseDTO({"field": duplicated_field}, duplicated_field + " already in use", http.HTTPStatus.CONFLICT)
+            return duplicate_key_response(duplicated_field, AdopterModel.match_field)
         except Exception as e:
             self.logger.error(f"id={request_id} Error updating adopter: {e}")
             return ResponseDTO(None, "Error on update adopter", http.HTTPStatus.BAD_REQUEST)

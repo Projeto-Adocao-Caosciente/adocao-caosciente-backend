@@ -8,13 +8,13 @@ class AnimalModel(BaseModel):
     breed: str = Field(None, min_length=2, max_length=60)
     height: str = Field(None, )
     weight: str = Field(None, )
-    special_needs: Optional[List[str]] = [""]
+    special_needs: Optional[List[str]] = None
     aditional_info: Optional[str] = Field(None, max_length=500) 
-    adoption_requirements: List[str] = [""]
-    photo: str = ""
-    adopter: str = ""
+    adoption_requirements: List[str] = None
+    photo: str = None
+    adopter: str = None
     forms: list = []
-    created_at: str = ""
+    created_at: str = None
     updated_at: str = datetime.now().isoformat()
 
 
@@ -60,5 +60,7 @@ class AnimalModel(BaseModel):
             "adoption_requirements": animal["adoption_requirements"],
             "photo": animal["photo"],
             "adopter": animal["adopter"],
-            "forms": [str(form) for form in animal["forms"]]
+            "forms": [str(form) for form in animal["forms"]],
+            "created_at": animal["created_at"],
+            "updated_at": animal["updated_at"]
         }

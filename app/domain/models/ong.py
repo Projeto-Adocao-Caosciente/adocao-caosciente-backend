@@ -49,9 +49,9 @@ class OngModel(BaseModel):
             'email': self.email,
             'mission': self.mission,
             'foundation': self.foundation,
-            'animals': self.animals,
             'description': self.description,
             'password': self.password,
+            'animals': self.animals,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
         }
@@ -73,7 +73,24 @@ class OngModel(BaseModel):
             "created_at": ong["created_at"],
             "updated_at": ong["updated_at"],
         }
-        
+    
+    @staticmethod
+    def match_field(field):
+        real_field_names = {
+            "cnpj": "CNPJ",
+            "name": "Nome",
+            "logo": "Logo",
+            "city": "Cidade",
+            "state": "Estado",
+            "phone": "Telefone",
+            "email": "E-mail",
+            "mission": "Missão",
+            "foundation": "Fundação",
+            "description": "Descrição",
+            "password": "Senha",
+        }
+        return real_field_names[field]
+
     def remove_mask_cnpj(self):
         cnpj_normalized = self.model_dump()["cnpj"].replace(".", "").replace("/", "").replace("-", "")
         self.cnpj = cnpj_normalized
