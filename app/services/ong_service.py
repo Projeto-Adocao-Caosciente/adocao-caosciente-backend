@@ -1,4 +1,6 @@
 import logging
+import re
+import unicodedata
 from bson import ObjectId
 from datetime import datetime
 import bcrypt
@@ -8,9 +10,9 @@ from app.domain.database.db import Database
 import http
 from app.domain.models.dto.response import ResponseDTO
 from pymongo.errors import DuplicateKeyError
-
 from app.domain.models.roles import Role
 
+from Levenshtein import distance as levenshtein_distance
 
 class OngService:
     def __init__(self):
@@ -155,8 +157,8 @@ class OngService:
                 }
             ]))
             if result:
+                animals = [AnimalModel.helper(animal) for animal in result[0]["animals"]]
                 self.logger.info(f"id={request_id} Ong animals retrieved successfully")
-                animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
                 return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Ong has no animals")
             return ResponseDTO([], "Ong has no animals", http.HTTPStatus.OK)
@@ -164,6 +166,36 @@ class OngService:
             self.logger.error(f"id={request_id} Error getting ong animals: {e}")
             return ResponseDTO(None, "Error on get ong animals", http.HTTPStatus.BAD_REQUEST)
     
+    def get_ong_animals_by_name(self, name: str, ong_id: str, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            with self.db.session.start_transaction():
+                ong_animals = self.get_ong_animals(ong_id, request_id)
+                if ong_animals.status != http.HTTPStatus.OK:
+                    return ong_animals
+                
+                name = name.lower()
+                name = "".join(c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn")
+
+                animals = ong_animals.data
+                normalized_animals_names = ["".join(c for c in unicodedata.normalize("NFD", animal['name'].lower()) if unicodedata.category(c) != "Mn") for animal in animals]
+
+                filtered_animals = []
+                THRESHOLD = 3
+                for idx, normalized_animal_name in enumerate(normalized_animals_names):
+                    if name in normalized_animal_name or levenshtein_distance(normalized_animal_name, name) <= THRESHOLD:
+                        filtered_animals.append(animals[idx])
+
+                if not filtered_animals:
+                    self.logger.info(f"id={request_id} Ong has no animals with a similar name")
+                    return ResponseDTO([], "Ong has no animals with a similar name", http.HTTPStatus.OK)
+
+                self.logger.info(f"id={request_id} Ong animals retrieved successfully")
+                return ResponseDTO(filtered_animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error getting animal: {e}")
+            return ResponseDTO(None, "Error on get animal", http.HTTPStatus.BAD_REQUEST)
+
     def update_ong_animals(self, ong_id, animal_id,  request_id: str = "") -> ResponseDTO:
         self.logger.info(f"id={request_id} Start service")
         try:

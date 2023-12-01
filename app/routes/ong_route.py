@@ -1,5 +1,6 @@
 import logging
-from fastapi import APIRouter, Body, Depends, Request
+from typing import Optional
+from fastapi import APIRouter, Body, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from app.domain.models.ong import OngModel
 from app.services.jwt_service import JWTBearer
@@ -19,7 +20,10 @@ jwt_bearer = JWTBearer()
 logger = logging.getLogger(__name__)
 
 @router.get("/", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_ong(request: Request):
+async def read_ong(
+    request: Request,
+    id: str = None
+):
     request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
     response = ong_service.get_ong_by_id(ong_id, request_id)
@@ -29,10 +33,21 @@ async def read_ong(request: Request):
     )
 
 @router.get("/animals", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def read_ong_animals(request: Request):
+async def read_ong_animals(
+    request: Request,
+    name: Optional[str] = Query(default=None, description="Filter animals by name")
+):
+    """
+    Retrieve animals belonging to the ong.
+    If the 'name' query parameter is provided, it will filter animals by name.
+    If 'name' is not provided, it will retrieve all animals by ong id.
+    """
     request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
-    response = ong_service.get_ong_animals(ong_id, request_id)
+    if name is None:
+        response = ong_service.get_ong_animals(ong_id, request_id)
+    else:
+        response = ong_service.get_ong_animals_by_name(name, ong_id, request_id)
     return JSONResponse(
         status_code=response.status,
         content=response.dict()
