@@ -39,7 +39,7 @@ async def read_adopter(request: Request):
 @router.get("/animals", dependencies=[Depends(jwt_bearer)])
 async def read_adopter_animals(request: Request):
     request_id = request.state.request_id
-    adopter_id = jwt_bearer.get_adopter_user_id()
+    adopter_id = jwt_bearer.get_user_id()
     response = adopter_service.get_adopter_animals(adopter_id, request_id)
     return JSONResponse(
         status_code=response.status,

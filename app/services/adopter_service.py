@@ -133,7 +133,7 @@ class AdopterService:
             ]))
             if result:
                 self.logger.info(f"id={request_id} Adopter animals retrieved successfully")
-                animals = [AnimalModel.animal_helper(animal) for animal in result[0]["animals"]]
+                animals = [AnimalModel.helper(animal) for animal in result[0]["animals"]]
                 return ResponseDTO(animals, "Adopter animals retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Adopter has no animals")
             return ResponseDTO([], "Adopter has no animals", http.HTTPStatus.OK)

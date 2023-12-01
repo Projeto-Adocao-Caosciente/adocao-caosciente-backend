@@ -13,8 +13,8 @@ class AnimalModel(BaseModel):
     adoption_requirements: List[str] = [""]
     photo: str = ""
     adopter: str = ""
-    created_at: str = ""
     forms: list = []
+    created_at: str = ""
     updated_at: str = datetime.now().isoformat()
 
 

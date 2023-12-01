@@ -15,6 +15,16 @@ from fastapi.exceptions import RequestValidationError
 
 api = FastAPI(
     title="Adoção Cãosciente",
+    summary="API para um sistema de automação de adoção de animais para uma ONG",
+    
+    license_info={
+        "name": "MIT License",
+        "url": "https://github.com/Projeto-Adocao-Caosciente/adocao-caosciente-backend/blob/e949baef1332d573e77a7d2103c7c7ec5e266854/LICENSE"
+    },
+    contact={
+        "name": "Support Team",
+        "url": "https://adocao-caosciente-frontend.vercel.app/contact",
+    },
     version="0.1.0"
 )
 
