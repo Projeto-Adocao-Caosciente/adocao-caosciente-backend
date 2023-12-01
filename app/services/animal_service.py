@@ -27,8 +27,8 @@ class AnimalService:
                 if response.status != http.HTTPStatus.OK:
                     self.logger.error(f"id={request_id} Error creating animal: {response.message}")
                     return response
-                
-                ong_id = response.data["id"]
+
+                ong_id = response.data['user']['id']
 
                 result = self.animals_collection.insert_one(animal.model_dump())
                 if not result:
@@ -49,11 +49,10 @@ class AnimalService:
         self.logger.info(f"id={request_id} Start service")
         try:
             with self.db.session.start_transaction():
-                response = self.get_animal(animal_id, ong_id, request_id)
-                if response.status != http.HTTPStatus.OK:
-                    return response
-                
-                old_animal = response.data
+                old_animal = self.animals_collection.find_one({"_id": ObjectId(animal_id)})
+                if not old_animal:
+                    self.logger.info(f"id={request_id} Animal not found")
+                    return ResponseDTO(None, "Animal not found", http.HTTPStatus.NOT_FOUND)
 
                 update_fields = { field : value for field, value in animal.model_dump().items() if value != old_animal[field] and value is not None }
                 if len(update_fields) == 0:

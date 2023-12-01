@@ -78,7 +78,23 @@ class AdopterModel(BaseModel):
             "created_at": adopter["created_at"],
             "updated_at": adopter["updated_at"],
         }
-        
+    
+    @staticmethod
+    def match_field(field):
+        real_field_name = {
+            "cpf": "CPF",
+            "name": "Nome",
+            "phone": "Telefone",
+            "state": "Estado",
+            "city": "Cidade",
+            "address": "Endereço",
+            "cep": "CEP",
+            "birthdate": "Data de nascimento",
+            "gender": "Gênero",
+            "email": "E-mail",
+            "password": "Senha",
+        }
+        return real_field_name[field]
 
     def remove_mask_cpf(self):
         self.cpf = self.remove_non_digits(self.model_dump()["cpf"])
