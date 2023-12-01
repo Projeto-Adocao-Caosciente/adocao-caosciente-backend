@@ -34,9 +34,25 @@ async def read_form_by_id(animal_id:str, form_id: str):
         status_code = response.status,
         content=response.dict()
     )
+
+@router.get("/{animal_id}/", dependencies=[Depends(jwt_bearer)], status_code=200)
+async def read_forms_from_animal(
+    request: Request,
+    animal_id: str
+    ):
+    request_id = request.state.request_id
+    ong_id = jwt_bearer.get_user_id()
+    response = form_service.get_forms_from_animal(animal_id,ong_id, request_id)
+    return JSONResponse(
+        status_code = response.status,
+        content=response.dict()
+    )
     
 @router.get("/questions/{animal_id}/{form_id}", dependencies=[Depends(jwt_bearer)], status_code=200)
-async def get_questions(animal_id:str, form_id: str):
+async def get_questions(
+    request: Request, 
+    animal_id:str, 
+    form_id: str):
     ong_id = jwt_bearer.get_user_id()
     response = form_service.get_questions(ong_id, animal_id, form_id)
     return JSONResponse(

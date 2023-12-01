@@ -112,3 +112,47 @@ class FormService:
     def get_answer_sheets(self, formID) -> ResponseDTO:
         #TODO: Retorna uma lista dos IDs das folhas de respostas dos participantes
         return
+
+    def get_forms_from_animal(self, animal_id:str, ong_id: str, request_id:str = ""):
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            response = self.animal_service.get_animal(animal_id, ong_id, request_id)
+            if not response.data:
+                return response
+            self.logger.info(f"id={request_id} Getting query")
+            pipeline = [
+                {
+                        "$match": {"_id": ObjectId(animal_id)}
+                    },
+                    {
+                        "$lookup": {
+                            "from": "forms",
+                            "localField": "forms",
+                            "foreignField": "_id",
+                            "as": "forms"
+                        }
+                    },
+                    {
+                        "$sort": {"forms.created_at": -1, "forms.name": 1}
+                    },
+                    {
+                        "$project": {
+                            "forms":1
+                        }
+                    }
+            ]
+            result = list(self.animal_service.animals_collection.aggregate(pipeline))
+            if result:
+                forms = [FormModel.helper(form) for form in result[0]["forms"]]
+                for form in forms:
+                    del form["animal_id"]
+                    del form["questions"]
+                    del form["answer_sheets"]
+                self.logger.info(f"id={request_id} Forms retrived successfully")
+                return ResponseDTO(forms, "Forms retrived sucessfully", http.HTTPStatus.OK)
+            self.logger.info(f"id={request_id} Animal has no forms")
+            
+        except Exception as e:
+            self.logger.error(f"if={request_id} Error getting form {e}")
+            return ResponseDTO(None, "Error getting forms from animal", http.HTTPStatus.BAD_REQUEST)
+    
