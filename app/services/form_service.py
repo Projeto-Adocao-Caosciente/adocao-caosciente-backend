@@ -83,8 +83,7 @@ class FormService:
             return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)
     
     def get_form (self, form_id: str, request_id: str = "")-> ResponseDTO:
-        if request_id == "":
-            self.logger.info(f"id = {request_id} starting get form")
+        self.logger.info(f"id = {request_id} starting get form")
         try:
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
