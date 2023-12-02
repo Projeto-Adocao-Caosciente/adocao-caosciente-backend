@@ -153,6 +153,13 @@ async def create_animal(
     """
     Create a new Animal belonging to the ong.
     """
+    required_fields = animal.required_field_at_create()
+    received_fields = set([ key for key, value in animal.model_dump().items() if value is not None ])
+    if not required_fields.issubset(received_fields):
+        return JSONResponse(
+            status_code=http.HTTPStatus.BAD_REQUEST,
+            content=ResponseDTO(None, f"Missing required fields: {required_fields - received_fields}", http.HTTPStatus.BAD_REQUEST).dict()
+        )
     request_id = request.state.request_id
     ong_id = jwt_bearer.get_user_id()
     response = animal_service.create_animal(animal, ong_id, request_id)

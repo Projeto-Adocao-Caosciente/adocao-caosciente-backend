@@ -23,6 +23,9 @@ class AdopterModel(BaseModel):
     updated_at: str = datetime.now().isoformat()
     password: str = Field(None, min_length=4, max_length=60)
 
+    def required_field_at_create(self) -> set:
+        return {"cpf", "name", "phone", "city", "state", "address", "cep", "birthdate", "gender", "email", "photo", "password" }
+
     class Config:
         json_schema_extra = {
             "cpf": "12345678901",
@@ -33,7 +36,7 @@ class AdopterModel(BaseModel):
             "address": "Address Name",
             "cep": "12345-678",
             "birthdate": "2003-01-01",
-            "gender": "M",
+            "gender": "Masculine",
             "email": "adopter@gmail.com",
             "password": "your_password"
         }
@@ -96,13 +99,19 @@ class AdopterModel(BaseModel):
         }
         return real_field_name[field]
 
-    def remove_mask_cpf(self):
+    def remove_mask_cpf(self) -> None:
+        if self.model_dump()['cpf'] is None:
+            return
         self.cpf = self.remove_non_digits(self.model_dump()["cpf"])
 
-    def remove_mask_cep(self):
+    def remove_mask_cep(self) -> None:
+        if self.model_dump()['cep'] is None:
+            return
         self.cep = self.remove_non_digits(self.model_dump()["cep"])
 
-    def remove_mask_phone(self):
+    def remove_mask_phone(self) -> None:
+        if self.model_dump()['phone'] is None:
+            return
         self.phone = self.remove_non_digits(self.model_dump()["phone"])
     
     def remove_non_digits(self, value):

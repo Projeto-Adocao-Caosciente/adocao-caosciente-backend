@@ -91,10 +91,14 @@ class OngModel(BaseModel):
         }
         return real_field_names[field]
 
-    def remove_mask_cnpj(self):
+    def remove_mask_cnpj(self) -> None:
+        if self.model_dump()["cnpj"] is None:
+            return
         cnpj_normalized = self.model_dump()["cnpj"].replace(".", "").replace("/", "").replace("-", "")
         self.cnpj = cnpj_normalized
         
-    def remove_mask_phone(self):
+    def remove_mask_phone(self) -> None:
+        if self.model_dump()["phone"] is None:
+            return
         phone_normalized = self.model_dump()["phone"].replace("(", "").replace(")", "").replace(" ", "").replace(".", "").replace("/", "").replace("-", "")
         self.phone = phone_normalized
