@@ -7,7 +7,7 @@ class AnswerSheetModel(BaseModel):
     answers: list[int] = []
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "adopter_id": "653efb24188b172ef77d8acc",
             "form_id": "653efee7eb19804a4a56fc86",
             "score": 7,

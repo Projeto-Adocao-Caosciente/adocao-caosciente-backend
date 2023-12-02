@@ -14,6 +14,7 @@ router = APIRouter(
     tags=['answer_sheet']
 )
 
+# TODO: Formulário está altamente acoplado com outras classes
 ong_service = OngService()
 animal_service = AnimalService(ong_service)
 form_service = FormService(ong_service, animal_service)
@@ -25,7 +26,8 @@ jwt_bearer = JWTBearer()
 async def answer_form(
     request: Request,
     form_id: str,
-    answer_sheet: AnswerSheetModel = Body(..., example=AnswerSheetModel.Config.schema_extra)):
+    answer_sheet: AnswerSheetModel = Body(..., example=AnswerSheetModel.Config.schema_extra)
+):
     request_id = request.state.request_id
     adopter_id = jwt_bearer.get_user_id()
     response = answerService.create_answer_sheet(adopter_id, form_id, answer_sheet, request_id)
