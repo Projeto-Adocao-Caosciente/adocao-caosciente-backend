@@ -10,13 +10,14 @@ class AnimalModel(BaseModel):
     weight: str = Field(None, )
     special_needs: Optional[List[str]] = None
     aditional_info: Optional[str] = Field(None, max_length=500) 
-    adoption_requirements: List[str] = None
     photo: str = None
     adopter: str = None
     forms: list = []
     created_at: str = None
     updated_at: str = datetime.now().isoformat()
 
+    def required_field_at_create(self) -> set:
+        return {"name", "type", "breed", "height", "weight", "special_needs", "aditional_info", "photo" }
 
     class Config:
         json_schema_extra = {
@@ -27,9 +28,7 @@ class AnimalModel(BaseModel):
             "weight": "2.830kg",
             "special_needs": ["Precisa de uma casa com quintal"],
             "aditional_info": "Necessita de carinho constante",
-            "adoption_requirements": [],
             "photo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUTExMWFhUXGBgYGBgYGBgYGBgYGBgYGBgYGBgYHSggGBolHRgXITEhJSkrLi4uGB8zODMsNygtLisBCgo,",
-            "adopter": "5f9d0a9f9d1a1d2d3d4d5d6"
         }
 
     def __dict__(self) -> dict:
@@ -57,7 +56,6 @@ class AnimalModel(BaseModel):
             "weight": animal["weight"],
             "special_needs": animal["special_needs"],
             "aditional_info": animal["aditional_info"],
-            "adoption_requirements": animal["adoption_requirements"],
             "photo": animal["photo"],
             "adopter": animal["adopter"],
             "forms": [str(form) for form in animal["forms"]],
