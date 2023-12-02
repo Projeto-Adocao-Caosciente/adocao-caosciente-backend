@@ -23,6 +23,9 @@ class AdopterModel(BaseModel):
     updated_at: str = datetime.now().isoformat()
     password: str = Field(None, min_length=4, max_length=60)
 
+    def required_field_at_create(self) -> set:
+        return {"cpf", "name", "phone", "city", "state", "address", "cep", "birthdate", "gender", "email", "photo", "password" }
+
     class Config:
         json_schema_extra = {
             "cpf": "12345678901",

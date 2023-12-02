@@ -17,6 +17,14 @@ jwt_bearer = JWTBearer()
 
 @router.post("/", status_code=201)
 async def create_adopter(request: Request, adopter: AdopterModel = Body(..., example=AdopterModel.Config.json_schema_extra)):
+    required_fields = adopter.required_field_at_create()
+    received_fields = set([ key for key, value in adopter.model_dump().items() if value is not None ])
+    if not required_fields.issubset(received_fields):
+        return JSONResponse(
+            status_code=http.HTTPStatus.BAD_REQUEST,
+            content=ResponseDTO(None, f"Missing required fields: {required_fields - received_fields}", http.HTTPStatus.BAD_REQUEST).dict()
+        )
+
     adopter.remove_mask_cpf()
     adopter.remove_mask_cep()
     adopter.remove_mask_phone()
