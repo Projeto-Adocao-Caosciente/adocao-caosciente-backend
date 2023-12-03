@@ -14,15 +14,18 @@ class FormModel(BaseModel):
                 {
                     "question": "Essa é uma pergunta?",
                     "choices": [
-                        {"id":0,"label":"Sim", "is_correct":"True"},
-                        {"id":1,"label":"Não", "is_correct":"False"},
-                        {"id":2,"label":"É Sim", "is_correct":"True"},
+                        {"id":0,"label":"Sim", "is_correct":True},
+                        {"id":1,"label":"Não", "is_correct":False},
+                        {"id":2,"label":"É Sim", "is_correct":True},
                     ]
-                    # "choices": [("Sim", "True"), ("Não", "False"), ("É Sim", "True")]
                 },
                 {
                     "question": "Voce Mora em:",
-                    "choices": [("Casa", "True"), ("Apartamento", "True"), ("Van", "False")]
+                    "choices": [
+                        {"id":0,"label":"Casa", "is_correct":True},
+                        {"id":1,"label":"Apartamento", "is_correct":True},
+                        {"id":2,"label":"Van", "is_correct":False},
+                    ]
                 }
             ]
         }
