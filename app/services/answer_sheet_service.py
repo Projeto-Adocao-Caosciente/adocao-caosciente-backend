@@ -23,7 +23,6 @@ class AnswerSheetService:
         
         try:
             with self.db.session.start_transaction():
-                print("######")
                 answerSheet.adopter_id = user_id
                 answerSheet.form_id = form_id
                 result_form = self.form_service.form_collection.find_one({"_id": ObjectId(form_id)})
@@ -31,8 +30,13 @@ class AnswerSheetService:
                     self.logger.error(f"id={request_id} Form not found")
                     return ResponseDTO(None, "Form not Found", http.HTTPStatus.BAD_REQUEST)
                 if len(result_form.get("questions")) != len(answerSheet.model_dump().get("answers")):
-                    self.logger.error(f"id={request_id} Invalid Answers")
+                    self.logger.error(f"id={request_id} Invalid Answers, Wrong number of answers")
                     return ResponseDTO(None, "Invalid Answers", http.HTTPStatus.BAD_REQUEST)
+                self.logger.info(f"id={request_id} checking if choices are valid")
+                for q, c in zip(result_form.get("questions"), answerSheet.model_dump().get("answers")):
+                    if len(q.get("choices")) <= c or c < 0:
+                        self.logger.error(f"id={request_id} {c} is an invalid choice for the question")
+                        return ResponseDTO(None, f"{c} is an invalid choice for the question {q.get("question")}", http.HTTPStatus.BAD_REQUEST)
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
                 if result:
                     self.logger.info(f"id={request_id} Answer Sheet Created Successfully")
@@ -40,7 +44,7 @@ class AnswerSheetService:
                     adopter_response = self.adopter_service.insert_answer(user_id, result.inserted_id)
                     form_response = self.form_service.insert_answer(form_id, result.inserted_id)
                     self.logger.info(f"id={request_id} Answer Sheet Inserted succesfully")
-                    return ResponseDTO(result.inserted_id, "Answer Sheet created successfully", http.HTTPStatus.CREATED)
+                    return ResponseDTO({"id":str(result.inserted_id)}, "Answer Sheet created successfully", http.HTTPStatus.CREATED)
                 else:
                     self.logger.error(f"id={request_id} Error on Create answer sheet")
                     return ResponseDTO(None, "Error on Create Answer Sheet.", http.HTTPStatus.BAD_REQUEST)

@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 class AnswerSheetModel(BaseModel):
     adopter_id: str
     form_id: str
-    score: int
+    score: int = None
     answers: list[int] = []
     
     class Config:
