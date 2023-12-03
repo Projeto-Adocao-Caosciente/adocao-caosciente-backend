@@ -1,10 +1,11 @@
+from typing import List
 from pydantic import BaseModel, Field
 
 class AnswerSheetModel(BaseModel):
     adopter_id: str
     form_id: str
     score: int = None
-    answers: list[int] = []
+    answers: List[int] = []
     
     class Config:
         json_schema_extra = {

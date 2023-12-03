@@ -41,7 +41,7 @@ class AnswerSheetService:
                 for q, c in zip(result_form.get("questions"), answerSheet.model_dump().get("answers")):
                     if len(q.get("choices")) <= c or c < 0:
                         self.logger.error(f"id={request_id} {c} is an invalid choice for the question")
-                        return ResponseDTO(None, f"{c} is an invalid choice for the question {q.get("question")}", http.HTTPStatus.BAD_REQUEST)
+                        return ResponseDTO(None, f"{c} is an invalid choice for the question {q.get('question')}", http.HTTPStatus.BAD_REQUEST)
                 
                 self.logger.info(f"id={request_id} Inserting answers in collection")
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
