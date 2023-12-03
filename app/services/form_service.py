@@ -17,45 +17,45 @@ class FormService:
         self.logger = logging.getLogger(__name__)
         
     def create_form(self, ong_id:str, animal_id:str, form: FormModel, request_id:str = "") -> ResponseDTO:
-        self.logger.info(f"id = {request_id} starting create form")
+        self.logger.info(f"id={request_id} starting create form")
         try:
             with self.db.session.start_transaction():
                 response = self.ong_service.get_ong_animals(ong_id)
                 if response.status != http.HTTPStatus.OK or not response.data: #baseado no reponse.data
-                    self.logger.error(f"id = {request_id} There is no animal in Ong")
+                    self.logger.error(f"id={request_id} There is no animal in Ong")
                     return ResponseDTO(None, "Ong has no animals", http.HTTPStatus.BAD_REQUEST)
                 animals = response.data
                 animal_exist = False
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
-                        self.logger.info(f"id = {request_id} Found Animal")
+                        self.logger.info(f"id={request_id} Found Animal")
                         animal_exist = True
                         break
                 if not animal_exist:
-                    self.logger.info(f"id = {request_id} Animal not Found")
+                    self.logger.info(f"id={request_id} Animal not Found")
                     return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
                 form.animal_id = animal_id
-                self.logger.info(f"id = {request_id} Inserting form in Collection")
+                self.logger.info(f"id={request_id} Inserting form in Collection")
                 result = self.form_collection.insert_one(form.model_dump())
                 if result:
-                    self.logger.info(f"id = {request_id} Insertion Sucessfull, inserting in animal")
+                    self.logger.info(f"id={request_id} Insertion Sucessfull, inserting in animal")
                     response = self.animal_service.insert_form(animal_id, result.inserted_id)
                     # TODO: tratar rollback
                     if response.status != http.HTTPStatus.OK:
                         return response
                     #new_form = self.form_collection.find_one(result.inserted_id)
-                    self.logger.info(f"id= {request_id} Form Create Sucessfully")
+                    self.logger.info(f"id={request_id} Form Create Sucessfully")
                     return ResponseDTO({"id": str(result.inserted_id)},"Form created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
-            self.logger.error(f"id= {request_id} Error creating form {e}")
+            self.logger.error(f"id={request_id} Error creating form {e}")
             print(f"Error creating Forms: {e}")
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
     def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str, request_id: str = "") -> ResponseDTO:
-        self.logger.info(f"id = {request_id} starting get form by id")
+        self.logger.info(f"id={request_id} starting get form by id")
         try:
             response = self.ong_service.get_ong_animals(ong_id)
             if response.status != http.HTTPStatus.OK:
@@ -89,33 +89,41 @@ class FormService:
             return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)
     
     def get_form (self, form_id: str, request_id: str = "")-> ResponseDTO:
-        self.logger.info(f"id = {request_id} starting get form")
+        self.logger.info(f"id={request_id} starting get form")
         try:
             result = self.form_collection.find_one({"_id": ObjectId(form_id)})
             if result:
-                self.logger.info(f"id = {request_id} Form gottern successfully")
+                self.logger.info(f"id={request_id} Form gottern successfully")
                 return ResponseDTO(FormModel.helper(result),"Form gotten successfully", http.HTTPStatus.OK)
-            self.logger.error(f"id = {request_id} error getting form")
+            self.logger.error(f"id={request_id} error getting form")
             return ResponseDTO(None, "Couldn't find Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             message = f"Error getting Form: {e}"
             print(message)
-            self.logger.error(f"id = {request_id} {message}")
+            self.logger.error(f"id={request_id} {message}")
             return ResponseDTO(None, message, http.HTTPStatus.BAD_REQUEST)  
         
-    def get_questions(self, ong_id: str,  animal_id:str, form_id: str, answers: bool = False) -> ResponseDTO:
+    def get_questions(self, ong_id: str,  animal_id:str, form_id: str, answers: bool = False, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} starting get question from form")
         response = self.get_form_by_id(ong_id, animal_id, form_id)
         if response.status != http.HTTPStatus.OK:
+            self.logger.error(f"id={request_id} form not found")
             return response
         questions = response.data.get("questions")
-        for q in questions:
-            for c in q.get('choices'):
-                del c["is_correct"]
+        
+        if not answers:
+            self.logger.info(f"id={request_id} deleting right answers")
+            for q in questions:
+                for c in q.get('choices'):
+                    del c["is_correct"]
+        self.logger.info(f"id={request_id} deleting unused fields")
         del response.data['animal_id']
         del response.data['answer_sheets']
+        self.logger.info(f"id={request_id} questions retrived sucessfully")
         return response
     
     def get_answer_sheets(self, form_id: str, request_id:str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Staring Get answerSheets from form")
         try:
             result = list(self.form_collection.aggregate([
                 {
@@ -156,6 +164,7 @@ class FormService:
             if not response.data:
                 return response
             self.logger.info(f"id={request_id} Getting query")
+            #TODO: futura melhoria, fazer essa query retornar apenas form _id and title
             pipeline = [
                 {
                         "$match": {"_id": ObjectId(animal_id)}
@@ -179,6 +188,7 @@ class FormService:
             ]
             result = list(self.animal_service.animals_collection.aggregate(pipeline))
             if result:
+                self.logger.info(f"id={request_id} Query sucessfull, deleting unused field")
                 forms = [FormModel.helper(form) for form in result[0]["forms"]]
                 for form in forms:
                     del form["animal_id"]
