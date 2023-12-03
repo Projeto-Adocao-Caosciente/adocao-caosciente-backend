@@ -28,23 +28,29 @@ class FormService:
                 animal_exist = False
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
+                        self.logger.info(f"id = {request_id} Found Animal")
                         animal_exist = True
                         break
                 if not animal_exist:
+                    self.logger.info(f"id = {request_id} Animal not Found")
                     return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
                 form.animal_id = animal_id
+                self.logger.info(f"id = {request_id} Inserting form in Collection")
                 result = self.form_collection.insert_one(form.model_dump())
                 if result:
+                    self.logger.info(f"id = {request_id} Insertion Sucessfull, inserting in animal")
                     response = self.animal_service.insert_form(animal_id, result.inserted_id)
                     # TODO: tratar rollback
                     if response.status != http.HTTPStatus.OK:
                         return response
                     #new_form = self.form_collection.find_one(result.inserted_id)
-                    return ResponseDTO({"id": result.inserted_id},"Form created successfully", http.HTTPStatus.CREATED)
+                    self.logger.info(f"id= {request_id} Form Create Sucessfully")
+                    return ResponseDTO({"id": str(result.inserted_id)},"Form created successfully", http.HTTPStatus.CREATED)
                 else:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             # TODO:Utilizar a biblioteca logging para criar uma documentação clara do que esta rolando na api. Nota: Isso facilita o debug e rastreabilidade tmb
+            self.logger.error(f"id= {request_id} Error creating form {e}")
             print(f"Error creating Forms: {e}")
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
     
@@ -103,11 +109,8 @@ class FormService:
             return response
         questions = response.data.get("questions")
         for q in questions:
-            new_choice = []
             for c in q.get('choices'):
-                new_choice.append(c[0])
-            q['choices'] = new_choice
-            print(q)
+                del c["is_correct"]
         del response.data['animal_id']
         del response.data['answer_sheets']
         return response
@@ -170,20 +173,17 @@ class FormService:
                     },
                     {
                         "$project": {
-                            "forms":{
-                                "_id":1,
-                                "title":1
-                            }
+                            "forms": 1
                         }
                     }
             ]
             result = list(self.animal_service.animals_collection.aggregate(pipeline))
             if result:
                 forms = [FormModel.helper(form) for form in result[0]["forms"]]
-                '''for form in forms:
+                for form in forms:
                     del form["animal_id"]
                     del form["questions"]
-                    del form["answer_sheets"]'''
+                    del form["answer_sheets"]
                 self.logger.info(f"id={request_id} Forms retrived successfully")
                 return ResponseDTO(forms, "Forms retrived sucessfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Animal has no forms")
@@ -209,4 +209,5 @@ class FormService:
         except Exception as e:
             self.logger.error(f"id={request_id} Error update form answer: {e}")          
             return ResponseDTO(None, "Error update form anwer", http.HTTPStatus.BAD_REQUEST)
+    
     
