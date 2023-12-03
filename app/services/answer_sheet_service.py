@@ -46,12 +46,12 @@ class AnswerSheetService:
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
                 if result:
                     self.logger.info(f"id={request_id} Answer Sheet Created Successfully")
-                    adopter_response = self.adopter_service.insert_answer(adopter_id, result.inserted_id)
+                    adopter_response = self.adopter_service.insert_answer(adopter_id, result.inserted_id, request_id)
                     if adopter_response.data is None:
                         self.logger.error(f"id={request_id} Error on Create answer sheet, unable to insert answersheet in adopter")
                         self.answer_sheet_collection.delete_one(ObjectId(result.inserted_id))
                         return ResponseDTO(None, f"Error on Create answer sheet, unable to insert answersheet in adopter", http.HTTPStatus.BAD_GATEWAY )
-                    form_response = self.form_service.insert_answer(form_id, result.inserted_id)
+                    form_response = self.form_service.insert_answer(form_id, result.inserted_id, request_id)
                     if form_response.data is None:
                         # TODO: remove only the element inserted in line 49
                         self.answer_sheet_collection.delete_one({"_id": ObjectId(result.inserted_id)})
