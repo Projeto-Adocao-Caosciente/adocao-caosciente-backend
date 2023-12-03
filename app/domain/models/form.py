@@ -1,15 +1,28 @@
 from typing import List
 from pydantic import BaseModel
+
+# TODO: Mandar para outro arquivo depois
+class Choice(BaseModel):
+    id: int
+    label: str
+    is_correct: bool
+
+class Question(BaseModel):
+    question: str
+    choices: List[Choice]
+
 class FormModel(BaseModel):
     title: str = None
     animal_id: str = None
-    questions: List[dict] = []
+    questions: List[Question] = []
     answer_sheets: List[str] = []
-    # TODO: Cascade form changes
+
+    def required_field_at_create(self) -> set:
+        return {"title", "questions"}
+    
     class Config:
         json_schema_extra = {
             "title": "Questionario",
-            "animal_id": "653efb24188b172ef77d8acc",
             "questions": [
                 {
                     "question": "Essa é uma pergunta?",

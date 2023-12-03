@@ -24,6 +24,7 @@ class FormService:
                 if response.status != http.HTTPStatus.OK or not response.data: #baseado no reponse.data
                     self.logger.error(f"id = {request_id} There is no animal in Ong")
                     return ResponseDTO(None, "Ong has no animals", http.HTTPStatus.BAD_REQUEST)
+                
                 animals = response.data
                 animal_exist = False
                 for animal in animals:
@@ -31,11 +32,12 @@ class FormService:
                         self.logger.info(f"id = {request_id} Found Animal")
                         animal_exist = True
                         break
+
                 if not animal_exist:
                     self.logger.info(f"id = {request_id} Animal not Found")
                     return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
+                
                 form.animal_id = animal_id
-                self.logger.info(f"id = {request_id} Inserting form in Collection")
                 result = self.form_collection.insert_one(form.model_dump())
                 if result:
                     self.logger.info(f"id = {request_id} Insertion Sucessfull, inserting in animal")
@@ -78,7 +80,7 @@ class FormService:
                     break
                 
             if not form_exist:
-                return ResponseDTO(None, "This form doesn't belong to this animal", http.HTTPStatus.BAD_REQUEST)
+                return ResponseDTO(None, "This form doesn't exist", http.HTTPStatus.NOT_FOUND)
             return self.get_form(form_id, request_id)
             
         except Exception as e:
