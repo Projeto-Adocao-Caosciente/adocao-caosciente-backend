@@ -22,6 +22,7 @@ class AnswerSheetService:
         self.logger.info(f"id={request_id} Start service create answer Sheet")
         try:
             with self.db.session.start_transaction():
+                # TODO: Melhorar isso com injeção de dependência no futuro
                 response = self.db.get_database().get_collection("adopter").find_one({"_id": ObjectId(adopter_id)})
                 if not response:
                     self.logger.error(f"id={request_id} User is not an adopter")
