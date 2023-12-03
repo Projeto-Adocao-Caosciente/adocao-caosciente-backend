@@ -17,7 +17,7 @@ class AnimalModel(BaseModel):
     updated_at: str = datetime.now().isoformat()
 
     def required_field_at_create(self) -> set:
-        return {"name", "type", "breed", "height", "weight", "special_needs", "aditional_info", "photo" }
+        return {"name", "type", "breed", "height", "weight", "photo" }
 
     class Config:
         json_schema_extra = {

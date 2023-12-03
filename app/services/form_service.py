@@ -21,21 +21,24 @@ class FormService:
         try:
             with self.db.session.start_transaction():
                 response = self.ong_service.get_ong_animals(ong_id)
-                if response.status != http.HTTPStatus.OK or not response.data: #baseado no reponse.data
-                    self.logger.error(f"id = {request_id} There is no animal in Ong")
+                if response.status != http.HTTPStatus.OK: #baseado no reponse.data
                     return ResponseDTO(None, "Ong has no animals", http.HTTPStatus.BAD_REQUEST)
                 
                 animals = response.data
-                animal_exist = False
+                if not animals:
+                    self.logger.error(f"id = {request_id} There is no animal in Ong")
+                    return ResponseDTO(None, "The current ONG has no animals", http.HTTPStatus.BAD_REQUEST)
+                
+                has_animal = False
                 for animal in animals:
                     if str(animal.get("id")) == animal_id:
                         self.logger.info(f"id = {request_id} Found Animal")
-                        animal_exist = True
+                        has_animal = True
                         break
 
-                if not animal_exist:
+                if not has_animal:
                     self.logger.info(f"id = {request_id} Animal not Found")
-                    return ResponseDTO(None, "Animal doesn't belongs to ONG. Aborting.", http.HTTPStatus.BAD_REQUEST)
+                    return ResponseDTO(None, "Animal doesn't belongs to ONG.", http.HTTPStatus.BAD_REQUEST)
                 
                 form.animal_id = animal_id
                 result = self.form_collection.insert_one(form.model_dump())

@@ -16,7 +16,6 @@ class AdopterModel(BaseModel):
     birthdate: str = Field(None, pattern=Mask.DATE)
     gender: str = Field(None, min_length=2, max_length=60)
     email: str = Field(None, max_length=60)
-    photo: str = Field(None, )
     animals: List[str] = Field([], )
     answers: List[str] = Field([], )
     created_at: str = Field(None, )
@@ -24,7 +23,7 @@ class AdopterModel(BaseModel):
     password: str = Field(None, min_length=4, max_length=60)
 
     def required_field_at_create(self) -> set:
-        return {"cpf", "name", "phone", "city", "state", "address", "cep", "birthdate", "gender", "email", "photo", "password" }
+        return {"cpf", "name", "phone", "city", "state", "address", "cep", "birthdate", "gender", "email", "password" }
 
     class Config:
         json_schema_extra = {
@@ -53,7 +52,6 @@ class AdopterModel(BaseModel):
             'birthdate': self.birthdate,
             'gender': self.gender,
             'email': self.email,
-            'photo': self.photo,
             'animals': self.animals,
             'answers': self.answers,
             'created_at': self.created_at,
@@ -75,7 +73,6 @@ class AdopterModel(BaseModel):
             "birthdate": adopter["birthdate"],
             "gender": adopter["gender"],
             "email": adopter["email"],
-            "photo": adopter["photo"],
             "animals": [str(animal) for animal in adopter["animals"]],
             "answers": [str(answer) for answer in adopter["answers"]],
             "created_at": adopter["created_at"],
