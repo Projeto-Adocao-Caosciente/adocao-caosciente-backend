@@ -53,6 +53,8 @@ class FormService:
             self.logger.error(f"id={request_id} Error creating form {e}")
             print(f"Error creating Forms: {e}")
             return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
+            self.logger.error(f"id= {request_id} Error creating form {e}")
+            return ResponseDTO(None, "Error Creating Form", http.HTTPStatus.BAD_REQUEST)
     
     def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str, request_id: str = "") -> ResponseDTO:
         self.logger.info(f"id={request_id} starting get form by id")
