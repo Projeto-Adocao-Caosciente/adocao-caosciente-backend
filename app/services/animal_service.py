@@ -84,7 +84,7 @@ class AnimalService:
             self.logger.error(f"id={request_id} Error deleting animal: {e}")
             return False
 
-    def get_animal(self, animal_id: str, ong_id: str, request_id: str = "") -> ResponseDTO:
+    def get_animal_by_id(self, animal_id: str, ong_id: str, request_id: str = "") -> ResponseDTO:
         self.logger.info(f"id={request_id} Start service")
         try:
             response = self.ong_service.get_ong_by_id(ong_id, request_id)
@@ -129,8 +129,48 @@ class AnimalService:
                     self.logger.info(f"id={request_id} Form inserted")
                     return ResponseDTO(result, "Form inserted", http.HTTPStatus.OK)
                 else:
-                    self.logger.error(f"id={request_id} Could not insert form")
-                    return ResponseDTO(None, "Could not insert form", http.HTTPStatus.BAD_REQUEST)
+                    self.logger.error(f"id={request_id} Error inserting form in animal")
+                    return ResponseDTO(None, "Error inserting form in animal", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
-            self.logger.error(f"id={request_id} Error update animal forms: {e}")          
-            return ResponseDTO(None, "Error update animal forms", http.HTTPStatus.BAD_REQUEST)
+            self.logger.error(f"id={request_id} Error updating animal forms: {e}")          
+            return ResponseDTO(None, "Error updating animal forms", http.HTTPStatus.BAD_REQUEST)
+
+    def get_forms_from_animal(self, animal_id: str, ong_id: str, request_id = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service")
+        try:
+            response = self.get_animal_by_id(animal_id, ong_id, request_id)
+            if response.status != http.HTTPStatus.OK:
+                return response
+
+            result = list(self.animals_collection.aggregate([
+                {
+                    "$match": {"_id": ObjectId(animal_id)}
+                },
+                {
+                    "$lookup": {
+                        "from": "forms",
+                        "localField": "forms",
+                        "foreignField": "_id",
+                        "as": "forms"
+                    }
+                },
+                {
+                    "$sort": {"forms.created_at": -1, "forms.title": 1}
+                },
+                {
+                    "$project": {
+                        "forms": 1
+                    }
+                }
+            ]))
+            self.logger.debug(result)
+            if result:
+                # TODO: Criar um DTO Especifico para esse caso e outros
+                forms = [{"id": str(form["_id"]), "title": form["title"]} for form in result[0]["forms"]]
+                self.logger.info(f"id={request_id} Form retrieved successfully")
+                return ResponseDTO(forms, "Form retrieved successfully", http.HTTPStatus.OK)
+            self.logger.info(f"id={request_id} Animal has no forms")
+            return ResponseDTO([], "Animal has no forms", http.HTTPStatus.OK)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error getting forms from animal: {e}")
+            return ResponseDTO(None, "Error getting forms from animal", http.HTTPStatus.BAD_REQUEST)

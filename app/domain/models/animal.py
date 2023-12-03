@@ -58,7 +58,6 @@ class AnimalModel(BaseModel):
             "aditional_info": animal["aditional_info"],
             "photo": animal["photo"],
             "adopter": animal["adopter"],
-            "forms": [str(form) for form in animal["forms"]],
             "created_at": animal["created_at"],
             "updated_at": animal["updated_at"]
         }

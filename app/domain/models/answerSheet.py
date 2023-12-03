@@ -1,11 +1,14 @@
+from datetime import datetime
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class AnswerSheetModel(BaseModel):
     adopter_id: str
     form_id: str
     score: int = None
     answers: List[int] = []
+    created_at: str = None
+    updated_at: str = datetime.now().isoformat()
     
     class Config:
         json_schema_extra = {

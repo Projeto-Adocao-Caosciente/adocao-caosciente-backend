@@ -1,3 +1,4 @@
+from datetime import datetime
 import http
 import logging
 from bson import ObjectId
@@ -44,6 +45,9 @@ class AnswerSheetService:
                         return ResponseDTO(None, f"{c} is an invalid choice for the question {q.get('question')}", http.HTTPStatus.BAD_REQUEST)
                 
                 self.logger.info(f"id={request_id} Inserting answers in collection")
+                current_time = datetime.now().isoformat()
+                answerSheet.created_at = current_time
+                answerSheet.updated_at = current_time
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
                 if result:
                     self.logger.info(f"id={request_id} Answer Sheet Created Successfully")

@@ -21,7 +21,7 @@ class OngModel(BaseModel):
     password: str = Field(None, min_length=4, max_length=60)
     
     def required_field_at_create(self) -> set:
-        return {"cnpj", "name", "logo", "city", "state", "phone", "email", "description", "password"}
+        return {"cnpj", "name", "logo", "city", "state", "phone", "email", "foundation", "password"}
 
     class Config:
         json_schema_extra = {

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel
 
@@ -16,6 +17,8 @@ class FormModel(BaseModel):
     animal_id: str = None
     questions: List[Question] = []
     answer_sheets: List[str] = []
+    created_at: str = None
+    updated_at: str = datetime.now().isoformat()
 
     def required_field_at_create(self) -> set:
         return {"title", "questions"}
@@ -60,4 +63,3 @@ class FormModel(BaseModel):
             "questions": form["questions"],
             "answer_sheets": form["answer_sheets"]
         }
-        
