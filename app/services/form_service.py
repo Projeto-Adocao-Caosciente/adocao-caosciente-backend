@@ -22,7 +22,7 @@ class FormService:
             with self.db.session.start_transaction():
                 response = self.ong_service.get_ong_animals(ong_id)
                 if response.status != http.HTTPStatus.OK or not response.data: #baseado no reponse.data
-                    #TODO; logging nao tem animal na ong
+                    self.logger.error(f"id = {request_id} There is no animal in Ong")
                     return ResponseDTO(None, "Ong has no animals", http.HTTPStatus.BAD_REQUEST)
                 animals = response.data
                 animal_exist = False
