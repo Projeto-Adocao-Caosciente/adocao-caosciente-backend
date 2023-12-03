@@ -137,3 +137,21 @@ class AdopterService:
         except Exception as e:
             self.logger.error(f"id={request_id} Error getting adopter animals: {e}")
             return ResponseDTO(None, "Error on get adopter animals", http.HTTPStatus.BAD_REQUEST)
+        
+    def insert_answer(self, adopter_id: str, answer_id: str, request_id: str = "") -> ResponseDTO:
+        self.logger.info(f"id={request_id} Start service insert answer")
+        try:
+            with self.db.session.start_transaction():
+                result = self.adopter_collection.update_one(
+                    {"_id": ObjectId(adopter_id)},
+                    {"$push": {"answers": answer_id}}
+                )
+                if result:
+                    self.logger.info(f"id={request_id} Answer inserted in adopter")
+                    return ResponseDTO(result, "Answer inserted in adopter", http.HTTPStatus.OK)
+                else:
+                    self.logger.error(f"id={request_id} Could not insert answer")
+                    return ResponseDTO(None, "Could not insert answer", http.HTTPStatus.BAD_REQUEST)
+        except Exception as e:
+            self.logger.error(f"id={request_id} Error update adopter answer: {e}")          
+            return ResponseDTO(None, "Error update adopter answers", http.HTTPStatus.BAD_REQUEST)
