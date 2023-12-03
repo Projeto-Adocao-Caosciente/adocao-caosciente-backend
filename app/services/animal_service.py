@@ -127,7 +127,7 @@ class AnimalService:
                 )
                 if result:
                     self.logger.info(f"id={request_id} Form inserted")
-                    return ResponseDTO(result, "Form inserted", http.HTTPStatus.OK)
+                    return ResponseDTO({"result": result}, "Form inserted", http.HTTPStatus.OK)
                 else:
                     self.logger.error(f"id={request_id} Could not insert form")
                     return ResponseDTO(None, "Could not insert form", http.HTTPStatus.BAD_REQUEST)
