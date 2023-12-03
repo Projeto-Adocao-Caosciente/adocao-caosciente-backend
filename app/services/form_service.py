@@ -50,7 +50,7 @@ class FormService:
                     return ResponseDTO(None, "Couldn't Create Form. Aborting.", http.HTTPStatus.BAD_REQUEST)
         except Exception as e:
             self.logger.error(f"id= {request_id} Error creating form {e}")
-            return ResponseDTO(None, "Error Creating Form: " + str(e), http.HTTPStatus.BAD_REQUEST)
+            return ResponseDTO(None, "Error Creating Form", http.HTTPStatus.BAD_REQUEST)
     
     def get_form_by_id(self, ong_id: str,  animal_id:str, form_id: str, request_id: str = "") -> ResponseDTO:
         self.logger.info(f"id = {request_id} starting get form by id")
