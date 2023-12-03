@@ -18,12 +18,15 @@ class AnswerSheetService:
         self.answer_sheet_collection = self.db.get_database().get_collection("answer_sheets")
         self.logger = logging.getLogger(__name__)
 
-    def create_answer_sheet(self, user_id: str, form_id: str,  answerSheet: AnswerSheetModel, request_id: str = ""):
+    def create_answer_sheet(self, adopter_id: str, form_id: str,  answerSheet: AnswerSheetModel, request_id: str = ""):
         self.logger.info(f"id={request_id} Start service create answer Sheet")
-        
         try:
             with self.db.session.start_transaction():
-                answerSheet.adopter_id = user_id
+                response = self.db.get_database().get_collection("adopter").find_one({"_id": ObjectId(adopter_id)})
+                if not response:
+                    self.logger.error(f"id={request_id} User is not an adopter")
+                    return ResponseDTO(None, "User is not an adopter", http.HTTPStatus.BAD_REQUEST)
+                answerSheet.adopter_id = adopter_id
                 answerSheet.form_id = form_id
                 result_form = self.form_service.form_collection.find_one({"_id": ObjectId(form_id)})
                 if not result_form:
@@ -32,17 +35,28 @@ class AnswerSheetService:
                 if len(result_form.get("questions")) != len(answerSheet.model_dump().get("answers")):
                     self.logger.error(f"id={request_id} Invalid Answers, Wrong number of answers")
                     return ResponseDTO(None, "Invalid Answers", http.HTTPStatus.BAD_REQUEST)
+                
                 self.logger.info(f"id={request_id} checking if choices are valid")
                 for q, c in zip(result_form.get("questions"), answerSheet.model_dump().get("answers")):
                     if len(q.get("choices")) <= c or c < 0:
                         self.logger.error(f"id={request_id} {c} is an invalid choice for the question")
                         return ResponseDTO(None, f"{c} is an invalid choice for the question {q.get("question")}", http.HTTPStatus.BAD_REQUEST)
+                
+                self.logger.info(f"id={request_id} Inserting answers in collection")
                 result = self.answer_sheet_collection.insert_one(answerSheet.model_dump())
                 if result:
                     self.logger.info(f"id={request_id} Answer Sheet Created Successfully")
-                    #TODO: Tratar responses da inserção
-                    adopter_response = self.adopter_service.insert_answer(user_id, result.inserted_id)
+                    adopter_response = self.adopter_service.insert_answer(adopter_id, result.inserted_id)
+                    if adopter_response.data is None:
+                        self.logger.error(f"id={request_id} Error on Create answer sheet, unable to insert answersheet in adopter")
+                        self.answer_sheet_collection.delete_one(ObjectId(result.inserted_id))
+                        return ResponseDTO(None, f"Error on Create answer sheet, unable to insert answersheet in adopter", http.HTTPStatus.BAD_GATEWAY )
                     form_response = self.form_service.insert_answer(form_id, result.inserted_id)
+                    if form_response.data is None:
+                        # TODO: remove only the element inserted in line 49
+                        self.answer_sheet_collection.delete_one({"_id": ObjectId(result.inserted_id)})
+                        self.logger.error(f"id={request_id} Error on Create answer sheet, unable to insert answersheet in form")
+                        return ResponseDTO(None, f"Error on Create answer sheet, unable to insert answersheet in form", http.HTTPStatus.BAD_GATEWAY )
                     self.logger.info(f"id={request_id} Answer Sheet Inserted succesfully")
                     return ResponseDTO({"id":str(result.inserted_id)}, "Answer Sheet created successfully", http.HTTPStatus.CREATED)
                 else:
