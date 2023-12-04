@@ -74,15 +74,21 @@ class FormService:
         try:
             with self.db.session.start_transaction():
                 result = self.form_collection.find_one({"_id": ObjectId(form_id)})
-                
+                if not result:
+                    self.logger.error(f"id = {request_id} Form doesn't exists")
+                    return ResponseDTO(None, "Form doesn't exists", http.HTTPStatus.NOT_FOUND)
                 form_questions = result["questions"]
+                # delete is_correct field
+                for question in form_questions:
+                    for choice in question["choices"]:
+                        del choice["is_correct"]
 
                 self.logger.info(f"id = {request_id} Form questions retrieved successfully")
                 return ResponseDTO(form_questions, "Form questions retrieved successfully", http.HTTPStatus.OK)
             
         except Exception as e:
-            self.logger.error(f"id={request_id} Form not exists: {e}")          
-            return ResponseDTO(None, "Form not exists", http.HTTPStatus.NOT_FOUND)
+            self.logger.error(f"id={request_id} Error getting form questions: {e}")          
+            return ResponseDTO(None, "Error getting form questions", http.HTTPStatus.NOT_FOUND)
 
     def get_answer_sheets(self, form_id: str, ong_id: str, request_id: str = "") -> ResponseDTO:
         self.logger.info(f"id = {request_id} starting get form answer sheets")

@@ -21,6 +21,7 @@ class AdopterService:
         self.logger.info(f"id={request_id} Start service")
         try:
             with self.db.session.start_transaction():
+                # FIXME: Adicionar encriptação de senha
                 current_time = datetime.now().isoformat()
                 adopter.created_at = current_time
                 adopter.updated_at = current_time
@@ -120,6 +121,9 @@ class AdopterService:
                     }
                 },
                 {
+                    "$unwind": "$animals"
+                },
+                {
                     "$sort": {"animals.created_at": -1, "animals.name": 1}
                 },
                 {
@@ -130,7 +134,7 @@ class AdopterService:
             ]))
             if result:
                 self.logger.info(f"id={request_id} Adopter animals retrieved successfully")
-                animals = [AnimalModel.helper(animal) for animal in result[0]["animals"]]
+                animals = [AnimalModel.helper(animal['animals']) for animal in result]
                 return ResponseDTO(animals, "Adopter animals retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Adopter has no animals")
             return ResponseDTO([], "Adopter has no animals", http.HTTPStatus.OK)

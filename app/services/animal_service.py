@@ -110,7 +110,7 @@ class AnimalService:
                     break
             if not has_animal:
                 self.logger.error(f"id={request_id} Animals doesn't belong to ong")
-                return ResponseDTO(None, "Animals doesn't belong to ong", http.HTTPStatus.UNAUTHORIZED)                
+                return ResponseDTO(None, "Animals doesn't belong to ong", http.HTTPStatus.BAD_REQUEST)                
             self.logger.info(f"id={request_id} Animal retrieved successfully")
             return ResponseDTO(AnimalModel.helper(result), "Animal retrieved successfully", http.HTTPStatus.OK)
         except Exception as e:
@@ -155,6 +155,9 @@ class AnimalService:
                     }
                 },
                 {
+                    "$unwind": "$forms"
+                },
+                {
                     "$sort": {"forms.created_at": -1, "forms.title": 1}
                 },
                 {
@@ -166,7 +169,7 @@ class AnimalService:
             self.logger.debug(result)
             if result:
                 # TODO: Criar um DTO Especifico para esse caso e outros
-                forms = [{"id": str(form["_id"]), "title": form["title"]} for form in result[0]["forms"]]
+                forms = [{"id": str(form['forms']["_id"]), "title": form['forms']["title"]} for form in result]
                 self.logger.info(f"id={request_id} Form retrieved successfully")
                 return ResponseDTO(forms, "Form retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Animal has no forms")

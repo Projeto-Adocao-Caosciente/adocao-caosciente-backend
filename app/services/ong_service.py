@@ -26,6 +26,7 @@ class OngService:
         self.logger.info(f"id={request_id} Start service")
         try:
             with self.db.session.start_transaction():
+                # FIXME: Adicionar encriptação de senha
                 current_time = datetime.now().isoformat()
                 ong.created_at = current_time
                 ong.updated_at = current_time
@@ -144,6 +145,9 @@ class OngService:
                     }
                 },
                 {
+                    "$unwind": "$animals"
+                },
+                {
                     "$sort": {"animals.created_at": -1, "animals.name": 1}
                 },
                 {
@@ -153,7 +157,7 @@ class OngService:
                 }
             ]))
             if result:
-                animals = [AnimalModel.helper(animal) for animal in result[0]["animals"]]
+                animals = [AnimalModel.helper(animal['animals']) for animal in result]
                 self.logger.info(f"id={request_id} Ong animals retrieved successfully")
                 return ResponseDTO(animals, "Ong animals retrieved successfully", http.HTTPStatus.OK)
             self.logger.info(f"id={request_id} Ong has no animals")
