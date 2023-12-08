@@ -61,7 +61,7 @@ class AdopterService:
                 adopter.updated_at = current_time
                 result = self.adopter_collection.update_one(
                     {"_id": ObjectId(adopter_id)}, 
-                    {"$set": adopter.model_dump()}
+                    {"$set": update_fields}
                 )
                 if result:
                     self.logger.info(f"id={request_id} Adopter updated successfully")
