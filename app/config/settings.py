@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = os.environ.get("DATABASE_NAME", "")
     DATABASE_URL_TEST: str = os.environ.get("DATABASE_URL_TEST", "")
     DATABASE_NAME_TEST: str = os.environ.get("DATABASE_NAME_TEST", "")
+    EMAIL_PASSWORD: str = os.environ.get("EMAIL_PASSWORD", "")
 
     class Config:
         env_file = ".env"
