@@ -1,10 +1,10 @@
 from string import Template
 
 
-def get_html_text(adopter_name: str, animal_name: str, form_link: str) -> str:
+def get_html_text(animal_name: str, form_link: str) -> str:
     html_text = Template(
         """
-            <!DOCTYPE html>
+             <!DOCTYPE html>
             <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="pt" style="padding:0;Margin:0">
             <head>
             <meta charset="UTF-8">
@@ -87,7 +87,7 @@ def get_html_text(adopter_name: str, animal_name: str, form_link: str) -> str:
                                 <td align="center" style="padding:0;Margin:0;font-size:0px"><a target="_blank" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;text-decoration:underline;color:#1376C8;font-size:14px"><img src="https://fcjnyrx.stripocdn.email/content/guids/CABINET_f32a864bf0ad1576388fa348576e02f654d8e7d14d04fa5fdd6a42e955afd7f6/images/logo.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="128"></a></td>
                                 </tr>
                                 <tr style="border-collapse:collapse">
-                                <td align="center" style="padding:10px;Margin:0"><h1 style="Margin:0;line-height:48px;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;color:#000000">Olá $adopter_name,</h1></td>
+                                <td align="center" style="padding:10px;Margin:0"><h1 style="Margin:0;line-height:48px;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;color:#000000">Olá! :D</h1></td>
                                 </tr>
                             </table></td>
                             </tr>
@@ -118,7 +118,7 @@ def get_html_text(adopter_name: str, animal_name: str, form_link: str) -> str:
                             <td align="left" style="padding:0;Margin:0;width:270px">
                             <table width="100%" cellspacing="0" cellpadding="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                                 <tr style="border-collapse:collapse">
-                                <td align="left" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'comic sans ms', 'marker felt-thin', arial, sans-serif;line-height:27px;color:#333333;font-size:18px"><strong>Obrigado por considerar a adoção de $animal_name! Por favor, preencha nosso formulário clicando no link abaixo.</strong></p></td>
+                                <td align="left" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'Roboto', 'marker felt-thin', arial, sans-serif;line-height:27px;color:#333333;font-size:18px"><strong>Obrigado por considerar a adoção de $animal_name! <br><br>Por favor, preencha nosso formulário clicando no link abaixo.</strong></p></td>
                                 </tr>
                                 <tr style="border-collapse:collapse">
                                 <td align="center" style="padding:0;Margin:0"><span class="es-button-border" style="border-style:solid;border-color:transparent;background:#06f638;border-width:0px;display:inline-block;border-radius:8px;width:auto"><a href="$form_link" class="es-button" target="_blank" style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#000000;font-size:14px;display:inline-block;background:#06f638;border-radius:8px;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-weight:bold;font-style:normal;line-height:17px;width:auto;text-align:center;padding:10px 20px 10px 20px;mso-padding-alt:0;mso-border-alt:10px solid #06f638">Link</a></span></td>
@@ -138,4 +138,4 @@ def get_html_text(adopter_name: str, animal_name: str, form_link: str) -> str:
         """
     )
 
-    return html_text.substitute(adopter_name=adopter_name, animal_name=animal_name, form_link=form_link)
+    return html_text.substitute(animal_name=animal_name, form_link=form_link)

@@ -1,7 +1,10 @@
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Body, Request
 from app.domain.models.email import EmailModel
+from app.services.animal_service import AnimalService
+from app.services.form_service import FormService
 from app.services.email_service import EmailService
+from app.services.ong_service import OngService
 
 
 router = APIRouter(
@@ -9,7 +12,10 @@ router = APIRouter(
     tags=['email_operation']
 )
 
-email_service = EmailService()
+ong_service = OngService()
+animal_service = AnimalService(ong_service)
+form_service = FormService(ong_service, animal_service)
+email_service = EmailService(form_service)
 
 @router.post("/send", status_code=201)
 async def send_email(
