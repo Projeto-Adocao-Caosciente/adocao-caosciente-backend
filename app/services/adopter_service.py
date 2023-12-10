@@ -45,10 +45,13 @@ class AdopterService:
         try:
             with self.db.session.start_transaction():
                 old_adopter = self.adopter_collection.find_one({"_id": ObjectId(adopter_id)})
+
                 if not old_adopter:
                     self.logger.info(f"id={request_id} Adopter not found")
                     return ResponseDTO(None, "Adopter not found", http.HTTPStatus.NOT_FOUND)
+                
                 update_fields = { field : value for field, value in adopter.model_dump().items() if value != old_adopter[field] and value is not None }
+                self.logger.debug(f"id={request_id} Update fields: {update_fields}")
                 if len(update_fields) == 0:
                     self.logger.info(f"id={request_id} Adopter not modified")
                     return ResponseDTO(None, "Adopter not modified", http.HTTPStatus.OK)

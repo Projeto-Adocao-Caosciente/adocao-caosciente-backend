@@ -1,9 +1,10 @@
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, Body, Depends, Request
 from app.domain.models.email import EmailModel
 from app.services.animal_service import AnimalService
 from app.services.form_service import FormService
 from app.services.email_service import EmailService
+from app.services.jwt_service import JWTBearer
 from app.services.ong_service import OngService
 
 
@@ -17,7 +18,9 @@ animal_service = AnimalService(ong_service)
 form_service = FormService(ong_service, animal_service)
 email_service = EmailService(form_service)
 
-@router.post("/send", status_code=201)
+jwt_bearer = JWTBearer()
+
+@router.post("/send",dependencies=[Depends(jwt_bearer)], status_code=201)
 async def send_email(
     request: Request,
     email: EmailModel = Body(..., example=EmailModel.Config.json_schema_extra)
